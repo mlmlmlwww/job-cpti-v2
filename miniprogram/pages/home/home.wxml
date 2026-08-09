@@ -1,13 +1,13 @@
 <view class="container home-container">
   <view class="brand-section">
     <view class="brand-logo">JOB-CPTI</view>
-    <view class="brand-tagline">职场人格 × 66 种 CP</view>
+    <view class="brand-tagline">职场人格 × CP</view>
     <view class="brand-desc">测测你在办公室是什么物种</view>
   </view>
 
   <view class="cta-section">
     <button class="btn-primary main-btn" bindtap="onStartQuiz" wx:if="{{!hasCompleted}}">
-      开始测试（32题）
+      开始测试
     </button>
     <button class="btn-primary main-btn" bindtap="onViewResult" wx:if="{{hasCompleted}}">
       查看我的结果 · {{personaName}}

@@ -1,0 +1,8 @@
+{
+  "name": "batch_update_cp_images",
+  "version": "1.0.0",
+  "description": "批量更新 cp_templates 集合的 shareImage，从云存储读取 CP 图片 fileID",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.1"
+  }
+}

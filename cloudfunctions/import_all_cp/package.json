@@ -1,0 +1,8 @@
+{
+  "name": "import_all_cp",
+  "version": "1.0.0",
+  "description": "补全 66 条 cp_templates 数据并更新 shareImage",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.1"
+  }
+}

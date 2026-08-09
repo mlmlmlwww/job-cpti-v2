@@ -1,0 +1,8 @@
+{
+  "name": "check_cp_missing",
+  "version": "1.0.0",
+  "description": "检查 cp_templates 集合缺少哪些 cpKey",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.1"
+  }
+}

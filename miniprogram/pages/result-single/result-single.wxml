@@ -26,8 +26,9 @@
 
   <!-- CTA -->
   <view class="cta-section">
-    <button class="btn-primary main-btn" open-type="share">
-      分享给同事 · 测 CP
+    <button class="btn-primary main-btn multi-line-btn" open-type="share">
+      <view>分享给同事</view>
+      <view class="btn-sub-line">测CP</view>
     </button>
     <button class="btn-secondary main-btn" bindtap="onInputCode">
       输入 TA 的匹配码
