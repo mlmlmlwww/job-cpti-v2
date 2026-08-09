@@ -1,0 +1,22 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/quiz/quiz",
+    "pages/loading/loading",
+    "pages/result-single/result-single",
+    "pages/result-cp/result-cp",
+    "pages/my-cps/my-cps",
+    "pages/match-code/match-code",
+    "pages/invite/invite",
+    "pages/about/about"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#1a1a2e",
+    "navigationBarTitleText": "JOB-CPTI 职场人格测试",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#1a1a2e"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

@@ -1,0 +1,25 @@
+<view class="container home-container">
+  <view class="brand-section">
+    <view class="brand-logo">JOB-CPTI</view>
+    <view class="brand-tagline">职场人格 × 66 种 CP</view>
+    <view class="brand-desc">测测你在办公室是什么物种</view>
+  </view>
+
+  <view class="cta-section">
+    <button class="btn-primary main-btn" bindtap="onStartQuiz" wx:if="{{!hasCompleted}}">
+      开始测试（32题）
+    </button>
+    <button class="btn-primary main-btn" bindtap="onViewResult" wx:if="{{hasCompleted}}">
+      查看我的结果 · {{personaName}}
+    </button>
+    <button class="btn-secondary main-btn" bindtap="onInputCode" wx:if="{{hasCompleted}}">
+      输入TA的匹配码
+    </button>
+  </view>
+
+  <view class="footer-section">
+    <view class="footer-link" bindtap="onViewMyCPs" wx:if="{{hasCompleted}}">查看我的 CP 列表 ›</view>
+    <view class="text-muted footer-link" bindtap="onAbout">测试玩法说明 ›</view>
+    <view class="text-muted footer-tip">匿名测试 · 5 分钟出结果</view>
+  </view>
+</view>

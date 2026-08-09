@@ -1,0 +1,29 @@
+<view class="container match-container">
+  <view class="title-section">
+    <view class="title">输入 TA 的匹配码</view>
+    <view class="subtitle">让 TA 把结果页的 6 位数字发给你</view>
+  </view>
+
+  <view class="input-section">
+    <input
+      class="code-input"
+      type="number"
+      maxlength="6"
+      placeholder="6 位数字"
+      value="{{code}}"
+      bindinput="onInputCode"
+      confirm-type="done"
+    />
+  </view>
+
+  <view class="cta-section">
+    <button
+      class="btn-primary main-btn"
+      bindtap="onSubmit"
+      loading="{{submitting}}"
+      disabled="{{code.length !== 6}}"
+    >
+      开始匹配
+    </button>
+  </view>
+</view>

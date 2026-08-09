@@ -1,0 +1,11 @@
+<view class="container">
+  <view class="section">
+    <view class="section-title">玩法说明</view>
+    <view class="text">32 道情景选择题，5 分钟完成。得到你的 11 种职场人格之一，分享给同事看看你俩的 CP 组合（共 66 种）。</view>
+  </view>
+
+  <view class="section">
+    <view class="section-title">隐私说明</view>
+    <view class="text">本测试仅为娱乐，测试结果不代表任何真实的人格评估结论。你的答题数据仅用于生成结果和匹配你与他人的 CP，不用于任何商业推广或第三方共享。</view>
+  </view>
+</view>

@@ -1,0 +1,47 @@
+/* app.wxss - 全局样式 */
+page {
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  min-height: 100vh;
+}
+
+.container {
+  padding: 40rpx 32rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: #fff;
+  border: none;
+  border-radius: 60rpx;
+  padding: 28rpx 60rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  box-shadow: 0 8rpx 24rpx rgba(245, 87, 108, 0.4);
+  letter-spacing: 2rpx;
+}
+.btn-primary::after { border: none; }
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  border-radius: 60rpx;
+  padding: 24rpx 48rpx;
+  font-size: 28rpx;
+}
+.btn-secondary::after { border: none; }
+
+.text-muted {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

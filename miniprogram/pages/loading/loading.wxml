@@ -1,0 +1,9 @@
+<view class="container loading-container">
+  <view class="dna-ring">
+    <view class="ring ring-1"></view>
+    <view class="ring ring-2"></view>
+    <view class="ring ring-3"></view>
+    <view class="center-dot"></view>
+  </view>
+  <view class="loading-text">{{currentText}}</view>
+</view>

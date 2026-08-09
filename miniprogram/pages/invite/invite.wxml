@@ -1,0 +1,19 @@
+<view class="container invite-container" wx:if="{{!loading}}">
+  <view class="inviter-section" wx:if="{{inviterInfo}}">
+    <image class="inviter-avatar" src="{{inviterInfo.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+    <view class="inviter-name">{{inviterInfo.nickname}}</view>
+    <view class="inviter-tip">邀请你测试职场 CP</view>
+  </view>
+
+  <view class="teaser-section">
+    <view class="teaser-question">TA 是【？？？】</view>
+    <view class="teaser-highlight">你和 TA 是什么职场 CP？</view>
+    <view class="teaser-desc">完成 32 题，看看你俩在职场是绝配还是死敌</view>
+  </view>
+
+  <view class="cta-section">
+    <button class="btn-primary main-btn" bindtap="onStartQuiz">
+      立刻测试
+    </button>
+  </view>
+</view>

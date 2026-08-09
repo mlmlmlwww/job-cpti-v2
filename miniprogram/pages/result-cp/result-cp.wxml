@@ -1,0 +1,44 @@
+<view class="container cp-container" wx:if="{{!loading && cpData}}">
+  <!-- CP主视觉图 -->
+  <view class="cp-hero-card">
+    <view class="cp-image-wrap">
+      <image
+        wx:if="{{cpData.shareImage}}"
+        class="cp-image"
+        src="{{cpData.shareImage}}"
+        mode="aspectFill"
+      ></image>
+      <view wx:else class="cp-image-placeholder">
+        <view class="placeholder-text">CP</view>
+      </view>
+    </view>
+
+    <view class="cp-title-section">
+      <view class="cp-persona-names">
+        <text class="persona-name-left">{{cpData.userA.personaName}}</text>
+        <text class="cp-x">×</text>
+        <text class="persona-name-right">{{cpData.userB.personaName}}</text>
+      </view>
+      <view class="cp-name">{{cpData.cpName}}</view>
+      <view class="cp-description">{{cpData.cpDescription}}</view>
+    </view>
+  </view>
+
+  <!-- CTA -->
+  <view class="cta-section">
+    <button class="btn-primary main-btn" open-type="share">
+      把我们的 CP 分享出去
+    </button>
+    <button class="btn-secondary main-btn" bindtap="onInputCode">
+      测试其他 CP
+    </button>
+  </view>
+
+  <view class="footer-section">
+    <view class="text-link" bindtap="onGoHome">返回首页 ›</view>
+  </view>
+</view>
+
+<view class="loading-view" wx:if="{{loading}}">
+  <view class="loading-text">加载中...</view>
+</view>

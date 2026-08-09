@@ -1,0 +1,92 @@
+.my-cps-container {
+  padding: 60rpx 32rpx;
+}
+
+.stats-section {
+  text-align: center;
+  padding: 60rpx 40rpx;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 24rpx;
+  margin-bottom: 40rpx;
+}
+.stats-number {
+  font-size: 120rpx;
+  font-weight: 900;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+  margin-bottom: 16rpx;
+}
+.stats-label {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 32rpx;
+}
+.stats-progress {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 0 20rpx;
+}
+.progress-bar-outer {
+  flex: 1;
+  height: 12rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6rpx;
+  overflow: hidden;
+}
+.progress-bar-inner {
+  height: 100%;
+  background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 6rpx;
+}
+.progress-text {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 100rpx 40rpx;
+}
+.empty-emoji { font-size: 100rpx; margin-bottom: 30rpx; }
+.empty-text { font-size: 32rpx; color: #fff; margin-bottom: 12rpx; }
+.empty-tip { font-size: 26rpx; color: rgba(255, 255, 255, 0.5); }
+
+.cp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+.cp-item {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2rpx solid rgba(255, 255, 255, 0.1);
+  border-radius: 20rpx;
+  padding: 24rpx 32rpx;
+  gap: 24rpx;
+}
+.avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+.cp-info { flex: 1; }
+.cp-with {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 8rpx;
+}
+.cp-name {
+  font-size: 32rpx;
+  color: #fff;
+  font-weight: 600;
+}
+.cp-arrow {
+  font-size: 40rpx;
+  color: rgba(255, 255, 255, 0.3);
+}

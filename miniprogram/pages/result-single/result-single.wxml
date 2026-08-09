@@ -1,0 +1,46 @@
+<view class="container result-container" wx:if="{{!loading && persona}}">
+  <!-- 人格主视觉卡片：图片 + 名字 + slogan -->
+  <view class="persona-hero-card">
+    <view class="hero-image-wrap">
+      <image
+        wx:if="{{persona.avatarUrl}}"
+        class="hero-image"
+        src="{{persona.avatarUrl}}"
+        mode="aspectFill"
+      ></image>
+      <view wx:else class="hero-image-placeholder">
+        <view class="placeholder-emoji">?</view>
+      </view>
+    </view>
+    <view class="hero-label">你的职场人格是</view>
+    <view class="hero-name">{{persona.name}}</view>
+    <view class="hero-slogan">{{persona.slogan}}</view>
+  </view>
+
+  <!-- 匹配码 -->
+  <view class="match-code-card" wx:if="{{matchCode}}">
+    <view class="match-code-label">🎯 你的匹配码</view>
+    <view class="match-code-value" bindtap="onCopyCode">{{matchCode}}</view>
+    <view class="match-code-tip">让同事输入这个码，看看你俩是什么 CP</view>
+  </view>
+
+  <!-- CTA -->
+  <view class="cta-section">
+    <button class="btn-primary main-btn" open-type="share">
+      分享给同事 · 测 CP
+    </button>
+    <button class="btn-secondary main-btn" bindtap="onInputCode">
+      输入 TA 的匹配码
+    </button>
+  </view>
+
+  <!-- 底部 -->
+  <view class="footer-section">
+    <view class="text-link" bindtap="onViewMyCPs">查看我的 CP 列表 ›</view>
+    <view class="text-link" bindtap="onRestart">重新测试</view>
+  </view>
+</view>
+
+<view class="loading-view" wx:if="{{loading}}">
+  <view class="loading-text">加载中...</view>
+</view>

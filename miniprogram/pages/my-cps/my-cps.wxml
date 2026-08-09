@@ -1,0 +1,35 @@
+<view class="container my-cps-container">
+  <view class="stats-section">
+    <view class="stats-number">{{total}}</view>
+    <view class="stats-label">已解锁的 CP 组合</view>
+    <view class="stats-progress">
+      <view class="progress-bar-outer">
+        <view class="progress-bar-inner" style="width: {{total / 66 * 100}}%"></view>
+      </view>
+      <view class="progress-text">/ 共 66 种</view>
+    </view>
+  </view>
+
+  <view class="empty-state" wx:if="{{!loading && list.length === 0}}">
+    <view class="empty-emoji">🎯</view>
+    <view class="empty-text">还没有匹配过 CP</view>
+    <view class="empty-tip">分享你的匹配码给同事，开始收集吧</view>
+  </view>
+
+  <view class="cp-list" wx:if="{{list.length > 0}}">
+    <view
+      class="cp-item"
+      wx:for="{{list}}"
+      wx:key="matchId"
+      data-matchid="{{item.matchId}}"
+      bindtap="onTapCP"
+    >
+      <image class="avatar" src="{{item.otherUser.avatarUrl || '/images/default-avatar.png'}}"></image>
+      <view class="cp-info">
+        <view class="cp-with">和 {{item.otherUser.nickname}}</view>
+        <view class="cp-name">{{item.cpName}}</view>
+      </view>
+      <view class="cp-arrow">›</view>
+    </view>
+  </view>
+</view>
