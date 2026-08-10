@@ -11,6 +11,15 @@ const matchesCollection = db.collection('matches')
 
 const PERSONA_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
+async function generateMatchCode() {
+  for (let i = 0; i < 10; i++) {
+    const code = String(Math.floor(100000 + Math.random() * 900000))
+    const exist = await usersCollection.where({ matchCode: code }).count()
+    if (exist.total === 0) return code
+  }
+  return String(Math.floor(100000 + Math.random() * 900000))
+}
+
 function calculatePersona(answers, questions) {
   const raw = {}, maxS = {}, minS = {}
   PERSONA_IDS.forEach(id => { raw[id] = 0; maxS[id] = 0; minS[id] = 0 })
@@ -44,20 +53,33 @@ function calculatePersona(answers, questions) {
 }
 
 async function tryMatch(currentUser, currentPersonaId, inviterOpenid) {
-  if (!inviterOpenid || inviterOpenid === currentUser.openid) return null
+  console.log('tryMatch 开始:', { currentOpenid: currentUser && currentUser.openid, currentPersonaId, inviterOpenid })
+  if (!inviterOpenid || !currentUser || inviterOpenid === currentUser.openid) {
+    console.log('tryMatch 提前结束: 缺少参数或自匹配')
+    return null
+  }
 
   const inviterRes = await usersCollection.where({ openid: inviterOpenid }).get()
-  if (inviterRes.data.length === 0) return null
+  if (inviterRes.data.length === 0) {
+    console.log('tryMatch 提前结束: 邀请人不存在')
+    return null
+  }
   const inviter = inviterRes.data[0]
-  if (!inviter.hasCompleted || !inviter.personaId) return null
+  if (!inviter.hasCompleted || !inviter.personaId) {
+    console.log('tryMatch 提前结束: 邀请人未完成测试')
+    return null
+  }
 
   // 保证 userA < userB（字典序）
   let userA = inviter.openid, userB = currentUser.openid
   let personaA = inviter.personaId, personaB = currentPersonaId
+  console.log('tryMatch 交换前:', { userA, userB, personaA, personaB })
   if (userA > userB) {
-    [userA, userB] = [userB, userA]
-    [personaA, personaB] = [personaB, personaA]
+    // 必须用分号或临时变量，否则会被 JS 解析成连续赋值导致 bug
+    const tmpOpenid = userA; userA = userB; userB = tmpOpenid
+    const tmpPersona = personaA; personaA = personaB; personaB = tmpPersona
   }
+  console.log('tryMatch 交换后:', { userA, userB, personaA, personaB })
 
   // 检查是否已存在
   const existRes = await matchesCollection.where({ userA, userB }).get()
@@ -69,17 +91,17 @@ async function tryMatch(currentUser, currentPersonaId, inviterOpenid) {
   const high = Math.max(personaA, personaB)
   const cpKey = `${low}_${high}`
 
-  const addRes = await matchesCollection.add({
-    data: {
-      userA, userB,
-      personaAId: personaA,
-      personaBId: personaB,
-      cpKey,
-      initiator: inviter.openid,
-      matchMethod: 'share_link',
-      createdAt: new Date()
-    }
-  })
+  const matchData = {
+    userA, userB,
+    personaAId: personaA,
+    personaBId: personaB,
+    cpKey,
+    initiator: inviter.openid,
+    matchMethod: 'share_link',
+    createdAt: new Date()
+  }
+  console.log('tryMatch 写入 matches:', matchData)
+  const addRes = await matchesCollection.add({ data: matchData })
   return { matchId: addRes._id, cpKey }
 }
 
@@ -121,6 +143,31 @@ exports.main = async (event, context) => {
       })
       matchCode = currentUser.matchCode || ''
       currentUser.openid = openid
+      currentUser.personaId = result.personaId
+    } else {
+      // 用户不存在则创建（兼容直接进测试页的场景）
+      matchCode = await generateMatchCode()
+      const addRes = await usersCollection.add({
+        data: {
+          openid,
+          nickname: '匿名同事',
+          avatarUrl: '',
+          matchCode,
+          personaId: result.personaId,
+          personaScores: result.personaScores,
+          answers,
+          hasCompleted: true,
+          completedAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      })
+      currentUser = {
+        _id: addRes._id,
+        openid,
+        matchCode,
+        personaId: result.personaId
+      }
     }
 
     // 尝试自动匹配
@@ -129,16 +176,15 @@ exports.main = async (event, context) => {
       matchResult = await tryMatch(currentUser, result.personaId, inviterId)
     }
 
-    return {
-      code: 0,
-      data: {
-        personaId: result.personaId,
-        personaName,
-        personaScores: result.personaScores,
-        matchCode,
-        matchResult
-      }
+    const responseData = {
+      personaId: result.personaId,
+      personaName,
+      personaScores: result.personaScores,
+      matchCode,
+      matchResult
     }
+    console.log('submit_answers 返回:', responseData)
+    return { code: 0, data: responseData }
   } catch (err) {
     console.error('submit_answers error:', err)
     return { code: 5000, message: err.message }

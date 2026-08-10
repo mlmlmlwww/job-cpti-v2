@@ -12,6 +12,13 @@ exports.main = async (event) => {
   const openid = wxContext.OPENID
   const { matchId } = event
 
+  console.log('get_cp_result 调用:', { openid, matchId })
+
+  if (!openid) {
+    console.error('get_cp_result: OPENID 为空')
+    return { code: 3009, message: '登录态异常，请重试' }
+  }
+
   if (!matchId) return { code: 2001, message: '缺少 matchId' }
 
   try {
@@ -20,7 +27,9 @@ exports.main = async (event) => {
     const match = mRes.data
 
     // 权限校验
+    console.log('get_cp_result 权限校验:', { openid, userA: match.userA, userB: match.userB, personaAId: match.personaAId, personaBId: match.personaBId })
     if (match.userA !== openid && match.userB !== openid) {
+      console.error('权限校验失败: 当前用户不在匹配中', { openid, userA: match.userA, userB: match.userB })
       return { code: 3007, message: '无权访问' }
     }
 

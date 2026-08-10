@@ -72,7 +72,7 @@
 .avatar {
   width: 80rpx;
   height: 80rpx;
-  border-radius: 50%;
+  border-radius: 12rpx;
   background: rgba(255, 255, 255, 0.1);
 }
 .cp-info { flex: 1; }

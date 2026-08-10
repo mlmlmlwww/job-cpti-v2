@@ -1,9 +1,8 @@
 <view class="container loading-container">
-  <view class="dna-ring">
-    <view class="ring ring-1"></view>
-    <view class="ring ring-2"></view>
-    <view class="ring ring-3"></view>
-    <view class="center-dot"></view>
+  <view class="spiral-loader">
+    <view class="spiral-ring"></view>
+    <view class="spiral-inner"></view>
+    <view class="spiral-core"></view>
   </view>
   <view class="loading-text">{{currentText}}</view>
 </view>

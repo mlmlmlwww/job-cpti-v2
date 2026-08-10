@@ -36,13 +36,16 @@ Page({
       })
       if (res.result && res.result.code === 0) {
         const data = res.result.data
+        console.log('loading submit_answers 返回:', data)
         app.globalData.lastResult = data
 
         if (this.textTimer) clearInterval(this.textTimer)
         // 如果匹配成功，跳CP结果页
         if (data.matchResult && data.matchResult.matchId) {
+          console.log('loading 跳转 CP 结果:', data.matchResult.matchId)
           wx.redirectTo({ url: `/pages/result-cp/result-cp?matchId=${data.matchResult.matchId}` })
         } else {
+          console.log('loading 跳转个人结果, personaId:', data.personaId, '类型:', typeof data.personaId)
           wx.redirectTo({ url: `/pages/result-single/result-single?personaId=${data.personaId}` })
         }
       } else {

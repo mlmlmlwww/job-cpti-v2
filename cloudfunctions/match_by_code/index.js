@@ -51,7 +51,7 @@ exports.main = async (event) => {
     let userA = targetUser.openid, userB = openid
     let personaA = targetUser.personaId, personaB = currentUser.personaId
     if (userA > userB) {
-      [userA, userB] = [userB, userA]
+      [userA, userB] = [userB, userA];
       const tmp = personaA; personaA = personaB; personaB = tmp
     }
 
