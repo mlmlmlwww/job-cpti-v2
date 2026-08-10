@@ -4,6 +4,7 @@ const app = getApp()
 Page({
   data: {
     cpData: null,
+    nickname: '',
     loading: true
   },
 
@@ -13,16 +14,15 @@ Page({
       wx.showModal({ title: '参数错误', content: '缺少匹配ID', showCancel: false })
       return
     }
-    // 确保 openid 已设置，分享时需要
-    if (!app.globalData.openid) {
-      try {
-        const initRes = await wx.cloud.callFunction({ name: 'user_init', data: {} })
-        if (initRes.result && initRes.result.code === 0) {
-          app.globalData.openid = initRes.result.data.openid
-        }
-      } catch (e) {
-        console.error('获取 openid 失败', e)
+    // 获取最新用户信息（openid + nickname）
+    try {
+      const initRes = await wx.cloud.callFunction({ name: 'user_init', data: {} })
+      if (initRes.result && initRes.result.code === 0) {
+        app.globalData.openid = initRes.result.data.openid
+        this.setData({ nickname: initRes.result.data.nickname || '匿名同事' })
       }
+    } catch (e) {
+      console.error('获取用户信息失败', e)
     }
     await this.loadCP(matchId)
   },
@@ -36,6 +36,11 @@ Page({
       })
       if (res.result && res.result.code === 0) {
         this.setData({ cpData: res.result.data, loading: false })
+
+        // CP 结果页展示后，如果未设置昵称，提示设置（分享前）
+        if (!this.data.nickname || this.data.nickname === '匿名同事') {
+          this.promptSetNickname()
+        }
       } else if (res.result && res.result.code === 3007 && retryCount < 3) {
         // 权限校验失败，可能是刚创建匹配，重试
         console.log(`get_cp_result 重试 ${retryCount + 1}/3`)
@@ -71,6 +76,32 @@ Page({
 
   onInputCode() {
     wx.navigateTo({ url: '/pages/match-code/match-code' })
+  },
+
+  promptSetNickname() {
+    wx.showModal({
+      title: '设置昵称',
+      content: '设置昵称，朋友更容易认出你',
+      editable: true,
+      placeholderText: '输入你的昵称',
+      success: async (res) => {
+        if (res.confirm && res.content && res.content.trim()) {
+          const nickname = res.content.trim()
+          try {
+            const initRes = await wx.cloud.callFunction({
+              name: 'user_init',
+              data: { userInfo: { nickname, avatarUrl: '' } }
+            })
+            if (initRes.result && initRes.result.code === 0) {
+              this.setData({ nickname })
+              wx.showToast({ title: '设置成功', icon: 'success' })
+            }
+          } catch (err) {
+            console.error('设置昵称失败', err)
+          }
+        }
+      }
+    })
   },
 
   onShareAppMessage() {

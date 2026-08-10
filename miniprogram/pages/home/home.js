@@ -5,6 +5,7 @@ Page({
   data: {
     hasCompleted: false,
     personaName: '',
+    nickname: '',
     loading: false
   },
 
@@ -31,9 +32,11 @@ Page({
       if (res.result && res.result.code === 0) {
         const data = res.result.data
         app.globalData.openid = data.openid
+        const nickname = data.nickname || '匿名同事'
         this.setData({
           hasCompleted: data.hasCompleted,
           personaName: data.personaName || '',
+          nickname,
           _initialized: true
         })
       }

@@ -15,5 +15,8 @@
     <button class="btn-primary main-btn" bindtap="onStartQuiz">
       立刻测试
     </button>
+    <view class="text-link viewed-link" bindtap="onViewMyCPs">
+      查看我的CP列表 ›
+    </view>
   </view>
 </view>

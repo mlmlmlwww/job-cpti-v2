@@ -5,11 +5,28 @@ Page({
   data: {
     persona: null,
     matchCode: '',
+    nickname: '',
     loading: true
   },
 
   async onLoad(options) {
     console.log('result-single onLoad:', options)
+
+    // 先获取当前用户信息（昵称、openid、matchCode）
+    let currentUserInfo = null
+    try {
+      const initRes = await wx.cloud.callFunction({ name: 'user_init', data: {} })
+      if (initRes.result && initRes.result.code === 0) {
+        currentUserInfo = initRes.result.data
+        if (currentUserInfo.openid) {
+          app.globalData.openid = currentUserInfo.openid
+        }
+        this.setData({ nickname: currentUserInfo.nickname || '匿名同事' })
+      }
+    } catch (e) {
+      console.error('result-single user_init error:', e)
+    }
+
     let personaId = options.personaId
 
     // 防御：personaId 必须是 1-11 的数字
@@ -26,40 +43,21 @@ Page({
       }
     }
 
-    if (personaId) {
-      await this.loadResult(personaId)
-    } else {
-      const last = app.globalData.lastResult
-      if (last && last.personaId) {
-        await this.loadResult(last.personaId)
-      } else {
-        await this.fetchCurrentUserResult()
-      }
+    // 如果 URL 和 lastResult 都没有，用当前用户的 personaId
+    if (!personaId && currentUserInfo && currentUserInfo.personaId) {
+      personaId = currentUserInfo.personaId
     }
-  },
 
-  async fetchCurrentUserResult() {
-    try {
-      console.log('result-single fetchCurrentUserResult')
-      const res = await wx.cloud.callFunction({ name: 'user_init', data: {} })
-      console.log('result-single user_init 结果:', res.result)
-      if (res.result && res.result.code === 0) {
-        // 确保 openid 始终被设置，分享时需要用到
-        if (res.result.data.openid) {
-          app.globalData.openid = res.result.data.openid
-        }
-        if (res.result.data.personaId) {
-          await this.loadResult(res.result.data.personaId, res.result.data.matchCode)
-        } else {
-          wx.showModal({
-            title: '还没有测试结果',
-            content: '先去完成测试吧',
-            showCancel: false,
-            success: () => wx.redirectTo({ url: '/pages/home/home' })
-          })
-        }
-      }
-    } catch (e) { console.error(e) }
+    if (personaId) {
+      await this.loadResult(personaId, currentUserInfo ? currentUserInfo.matchCode : '')
+    } else {
+      wx.showModal({
+        title: '还没有测试结果',
+        content: '先去完成测试吧',
+        showCancel: false,
+        success: () => wx.redirectTo({ url: '/pages/home/home' })
+      })
+    }
   },
 
   async loadResult(personaId, matchCode) {
@@ -92,6 +90,11 @@ Page({
           matchCode: matchCode || lastResult.matchCode || '',
           loading: false
         })
+
+        // 结果页展示后，如果未设置昵称，提示设置（分享前）
+        if (!this.data.nickname || this.data.nickname === '匿名同事') {
+          this.promptSetNickname()
+        }
       } else {
         wx.showModal({
           title: '加载失败',
@@ -128,6 +131,32 @@ Page({
 
   onRestart() {
     wx.redirectTo({ url: '/pages/quiz/quiz' })
+  },
+
+  promptSetNickname() {
+    wx.showModal({
+      title: '设置昵称',
+      content: '设置昵称，朋友更容易认出你',
+      editable: true,
+      placeholderText: '输入你的昵称',
+      success: async (res) => {
+        if (res.confirm && res.content && res.content.trim()) {
+          const nickname = res.content.trim()
+          try {
+            const initRes = await wx.cloud.callFunction({
+              name: 'user_init',
+              data: { userInfo: { nickname, avatarUrl: '' } }
+            })
+            if (initRes.result && initRes.result.code === 0) {
+              this.setData({ nickname })
+              wx.showToast({ title: '设置成功', icon: 'success' })
+            }
+          } catch (err) {
+            console.error('设置昵称失败', err)
+          }
+        }
+      }
+    })
   },
 
   onShareAppMessage() {

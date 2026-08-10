@@ -18,7 +18,7 @@
   </view>
 
   <view class="footer-section">
-    <view class="footer-link" bindtap="onViewMyCPs" wx:if="{{hasCompleted}}">查看我的 CP 列表 ›</view>
+    <view class="text-muted footer-link" bindtap="onViewResult" wx:if="{{!hasCompleted}}">查看我的结果 ›</view>
     <view class="text-muted footer-link" bindtap="onAbout">测试玩法说明 ›</view>
     <view class="text-muted footer-tip">匿名测试 · 5 分钟出结果</view>
   </view>

@@ -4,6 +4,7 @@ const app = getApp()
 Page({
   data: {
     inviterInfo: null,
+    hasCompleted: false,
     loading: true
   },
 
@@ -21,10 +22,13 @@ Page({
       })
       if (res.result && res.result.code === 0) {
         app.globalData.openid = res.result.data.openid
+        const hasCompleted = res.result.data.hasCompleted || false
         this.setData({
           inviterInfo: res.result.data.inviterInfo,
+          hasCompleted,
           loading: false
         })
+        console.log('invite 页面状态:', { hasCompleted, inviterInfo: res.result.data.inviterInfo })
 
         // 如果自己已经完成了测试，直接跳CP结果
         if (res.result.data.hasCompleted && res.result.data.inviterInfo && res.result.data.inviterInfo.hasCompleted) {
@@ -55,5 +59,9 @@ Page({
 
   onStartQuiz() {
     wx.navigateTo({ url: '/pages/quiz/quiz' })
+  },
+
+  onViewMyCPs() {
+    wx.navigateTo({ url: '/pages/my-cps/my-cps' })
   }
 })

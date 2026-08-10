@@ -50,6 +50,9 @@ exports.main = async (event, context) => {
             updatedAt: new Date()
           }
         })
+        // 同步更新内存中的 user 对象，确保返回最新数据
+        user.nickname = userInfo.nickname
+        user.avatarUrl = userInfo.avatarUrl || ''
       }
     }
 
@@ -80,6 +83,8 @@ exports.main = async (event, context) => {
         hasCompleted: user.hasCompleted,
         personaId: user.personaId,
         personaName,
+        nickname: user.nickname || '匿名同事',
+        avatarUrl: user.avatarUrl || '',
         inviterInfo
       }
     }
