@@ -5,6 +5,7 @@
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
+const _ = db.command
 
 exports.main = async (event) => {
   try {
@@ -18,14 +19,23 @@ exports.main = async (event) => {
     let updatedCount = 0
     const results = []
 
+    // 先查一下 personas 集合有多少条记录、字段类型是什么
+    const sampleRes = await db.collection('personas').limit(3).get()
+    console.log('personas 样本:', sampleRes.data)
+
     for (let i = 1; i <= 11; i++) {
-      const fileId = `${prefix}/personas/${i}.JPG`
-      
+      // 上传后的图片扩展名是 .jpeg
+      const fileId = `${prefix}/personas/${i}.jpeg`
+
       try {
+        // 兼容 personaId 是 Number 或 String 的情况
         const updateRes = await db.collection('personas')
-          .where({ personaId: i })
+          .where(_.or([
+            { personaId: i },
+            { personaId: String(i) }
+          ]))
           .update({ data: { avatarUrl: fileId } })
-        
+
         if (updateRes.stats.updated > 0) {
           updatedCount++
           results.push(`personaId ${i} → OK`)

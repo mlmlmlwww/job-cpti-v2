@@ -55,15 +55,37 @@ exports.main = async (event) => {
       const tmp = personaA; personaA = personaB; personaB = tmp
     }
 
-    // 已存在则复用
+    // 已存在则复用，人格变化则更新旧记录
     const existRes = await matchesCollection.where({ userA, userB }).get()
     if (existRes.data.length > 0) {
+      const existMatch = existRes.data[0]
+      // 人格变化时更新旧记录，不创建新记录
+      if (existMatch.personaAId !== personaA || existMatch.personaBId !== personaB) {
+        const newCpKey = `${Math.min(personaA, personaB)}_${Math.max(personaA, personaB)}`
+        await matchesCollection.doc(existMatch._id).update({
+          data: {
+            personaAId: personaA,
+            personaBId: personaB,
+            cpKey: newCpKey,
+            updatedAt: new Date()
+          }
+        })
+        console.log('match_by_code 更新旧 match:', { matchId: existMatch._id, old: existMatch.cpKey, new: newCpKey })
+        return {
+          code: 0,
+          data: {
+            matchStatus: 'success',
+            matchId: existMatch._id,
+            cpKey: newCpKey
+          }
+        }
+      }
       return {
         code: 0,
         data: {
           matchStatus: 'success',
-          matchId: existRes.data[0]._id,
-          cpKey: existRes.data[0].cpKey
+          matchId: existMatch._id,
+          cpKey: existMatch.cpKey
         }
       }
     }

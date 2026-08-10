@@ -84,7 +84,22 @@ async function tryMatch(currentUser, currentPersonaId, inviterOpenid) {
   // 检查是否已存在
   const existRes = await matchesCollection.where({ userA, userB }).get()
   if (existRes.data.length > 0) {
-    return { matchId: existRes.data[0]._id, cpKey: existRes.data[0].cpKey }
+    const existMatch = existRes.data[0]
+    // 人格变化时更新旧记录，不创建新记录
+    if (existMatch.personaAId !== personaA || existMatch.personaBId !== personaB) {
+      const newCpKey = `${Math.min(personaA, personaB)}_${Math.max(personaA, personaB)}`
+      await matchesCollection.doc(existMatch._id).update({
+        data: {
+          personaAId: personaA,
+          personaBId: personaB,
+          cpKey: newCpKey,
+          updatedAt: new Date()
+        }
+      })
+      console.log('tryMatch 更新旧 match:', { matchId: existMatch._id, old: existMatch.cpKey, new: newCpKey })
+      return { matchId: existMatch._id, cpKey: newCpKey }
+    }
+    return { matchId: existMatch._id, cpKey: existMatch.cpKey }
   }
 
   const low = Math.min(personaA, personaB)
