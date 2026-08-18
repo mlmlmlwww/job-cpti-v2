@@ -1,4 +1,6 @@
 // app.js
+const cache = require('./utils/cache.js')
+
 App({
   onLaunch(options) {
     if (!wx.cloud) {
@@ -10,6 +12,10 @@ App({
       })
     }
     this.parseInviteContext(options)
+
+    // 恢复本地缓存的 openid（避免每次进结果页都调 user_init 只为拿 openid）
+    const cachedOpenid = cache.getSync('openid')
+    if (cachedOpenid) this.globalData.openid = cachedOpenid
 
     // 预热云函数容器 + 预加载小程序码 + 预加载人格图
     this.warmup()
@@ -30,9 +36,12 @@ App({
     }
   },
 
-  // 预热云函数容器
+  // 预热云函数容器（业务上会用到的都提前拉起，减少冷启动）
   warmup() {
-    wx.cloud.callFunction({ name: 'get_questions' }).catch(() => {})
+    const names = ['get_questions', 'user_init', 'get_persona_detail', 'get_my_cps', 'get_cp_result']
+    names.forEach(name => {
+      wx.cloud.callFunction({ name, data: { __warmup: true } }).catch(() => {})
+    })
   },
 
   // 预加载11张人格图到本地缓存

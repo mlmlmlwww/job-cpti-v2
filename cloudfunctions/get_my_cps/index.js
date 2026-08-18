@@ -8,6 +8,7 @@ const usersCollection = db.collection('users')
 const cpCollection = db.collection('cp_templates')
 
 exports.main = async (event) => {
+  if (event && event.__warmup) return { code: 0, warmup: true }
   const wxContext = cloud.getWXContext()
   const openid = wxContext.OPENID
   const { page = 1, pageSize = 20 } = event

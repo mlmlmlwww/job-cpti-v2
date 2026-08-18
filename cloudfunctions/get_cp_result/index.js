@@ -1,13 +1,12 @@
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
+const $ = db.command.aggregate
 
 const matchesCollection = db.collection('matches')
-const usersCollection = db.collection('users')
-const cpCollection = db.collection('cp_templates')
-const personasCollection = db.collection('personas')
 
 exports.main = async (event) => {
+  if (event && event.__warmup) return { code: 0, warmup: true }
   const wxContext = cloud.getWXContext()
   const openid = wxContext.OPENID
   const { matchId } = event
@@ -22,10 +21,26 @@ exports.main = async (event) => {
   if (!matchId) return { code: 2001, message: '缺少 matchId' }
 
   try {
-    const mRes = await matchesCollection.doc(matchId)
-      .field({ userA: true, userB: true, cpKey: true, personaAId: true, personaBId: true }).get()
-    if (!mRes.data) return { code: 3006, message: '匹配不存在' }
-    const match = mRes.data
+    // 一次 aggregate 拉完 match + cp_template + userA/B + personaA/B
+    const aggRes = await matchesCollection.aggregate()
+      .match({ _id: matchId })
+      .lookup({ from: 'cp_templates', localField: 'cpKey', foreignField: 'cpKey', as: 'cpArr' })
+      .lookup({ from: 'users', localField: 'userA', foreignField: 'openid', as: 'uAArr' })
+      .lookup({ from: 'users', localField: 'userB', foreignField: 'openid', as: 'uBArr' })
+      .lookup({ from: 'personas', localField: 'personaAId', foreignField: 'personaId', as: 'pAArr' })
+      .lookup({ from: 'personas', localField: 'personaBId', foreignField: 'personaId', as: 'pBArr' })
+      .project({
+        userA: 1, userB: 1, cpKey: 1, personaAId: 1, personaBId: 1,
+        cpArr: { cpKey: 1, cpName: 1, cpDescription: 1, shareImage: 1 },
+        uAArr: { openid: 1, nickname: 1, avatarUrl: 1, matchCode: 1 },
+        uBArr: { openid: 1, nickname: 1, avatarUrl: 1, matchCode: 1 },
+        pAArr: { personaId: 1, name: 1 },
+        pBArr: { personaId: 1, name: 1 }
+      })
+      .end()
+
+    if (!aggRes.list || aggRes.list.length === 0) return { code: 3006, message: '匹配不存在' }
+    const match = aggRes.list[0]
 
     // 权限校验
     console.log('get_cp_result 权限校验:', { openid, userA: match.userA, userB: match.userB, personaAId: match.personaAId, personaBId: match.personaBId })
@@ -34,26 +49,12 @@ exports.main = async (event) => {
       return { code: 3007, message: '无权访问' }
     }
 
-    // 拉 CP 模板、用户信息、人格名（并行，互不依赖）
-    const [cpRes, usersRes, pRes] = await Promise.all([
-      cpCollection.where({ cpKey: match.cpKey })
-        .field({ cpKey: true, cpName: true, cpDescription: true, shareImage: true }).get(),
-      usersCollection.where({ openid: db.command.in([match.userA, match.userB]) })
-        .field({ openid: true, nickname: true, avatarUrl: true, matchCode: true }).get(),
-      personasCollection.where({ personaId: db.command.in([match.personaAId, match.personaBId]) })
-        .field({ personaId: true, name: true }).get()
-    ])
-
-    if (cpRes.data.length === 0) return { code: 3008, message: 'CP 模板不存在' }
-    const cpTemplate = cpRes.data[0]
-
-    const userMap = {}
-    usersRes.data.forEach(u => { userMap[u.openid] = u })
-    const userA = userMap[match.userA] || {}
-    const userB = userMap[match.userB] || {}
-
-    const nameMap = {}
-    pRes.data.forEach(p => { nameMap[p.personaId] = p.name })
+    if (!match.cpArr || match.cpArr.length === 0) return { code: 3008, message: 'CP 模板不存在' }
+    const cpTemplate = match.cpArr[0]
+    const userA = (match.uAArr && match.uAArr[0]) || {}
+    const userB = (match.uBArr && match.uBArr[0]) || {}
+    const personaA = (match.pAArr && match.pAArr[0]) || {}
+    const personaB = (match.pBArr && match.pBArr[0]) || {}
 
     return {
       code: 0,
@@ -68,14 +69,14 @@ exports.main = async (event) => {
           nickname: (userA.nickname && userA.nickname !== '匿名同事') ? userA.nickname : (userA.matchCode || '匿名同事'),
           avatarUrl: userA.avatarUrl || '',
           personaId: match.personaAId,
-          personaName: nameMap[match.personaAId] || ''
+          personaName: personaA.name || ''
         },
         userB: {
           openid: userB.openid,
           nickname: (userB.nickname && userB.nickname !== '匿名同事') ? userB.nickname : (userB.matchCode || '匿名同事'),
           avatarUrl: userB.avatarUrl || '',
           personaId: match.personaBId,
-          personaName: nameMap[match.personaBId] || ''
+          personaName: personaB.name || ''
         }
       }
     }

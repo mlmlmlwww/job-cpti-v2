@@ -2,7 +2,8 @@ const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 
-exports.main = async () => {
+exports.main = async (event) => {
+  if (event && event.__warmup) return { code: 0, warmup: true }
   try {
     const res = await db.collection('questions')
       .where({ isActive: true })

@@ -1,5 +1,8 @@
 // pages/result-cp/result-cp.js
 const app = getApp()
+const cache = require('../../utils/cache.js')
+
+function cpCacheKey(id) { return `cp_result_${id}` }
 
 Page({
   data: {
@@ -20,7 +23,32 @@ Page({
     let userInfo = app.globalData.userInfo || null
     const needsInit = !userInfo
 
-    // 并行发出 user_init（如果需要）和 get_cp_result
+    // 命中本地缓存 → 立即展示；再后台异步刷新
+    const cached = cache.getSync(cpCacheKey(matchId))
+    if (cached) {
+      const nickname = (userInfo && userInfo.nickname) || '匿名同事'
+      this.setData({ cpData: cached, nickname, loading: false })
+      // 后台静默刷新
+      if (needsInit) {
+        wx.cloud.callFunction({ name: 'user_init' }).then(res => {
+          if (res.result && res.result.code === 0) {
+            const u = res.result.data
+            app.globalData.userInfo = u
+            if (u.openid) app.globalData.openid = u.openid
+            this.setData({ nickname: u.nickname || nickname })
+          }
+        }).catch(() => {})
+      }
+      this.callGetCPResult(matchId).then(res => {
+        if (res && res.result && res.result.code === 0) {
+          cache.setSync(cpCacheKey(matchId), res.result.data)
+          this.setData({ cpData: res.result.data })
+        }
+      })
+      return
+    }
+
+    // 未命中：并行 user_init + get_cp_result
     const [initRes, cpRes] = await Promise.all([
       needsInit ? wx.cloud.callFunction({ name: 'user_init' }).catch(e => {
         console.error('获取用户信息失败', e)
@@ -57,6 +85,7 @@ Page({
 
   processCPResult(res, matchId, nickname) {
     if (res && res.result && res.result.code === 0) {
+      cache.setSync(cpCacheKey(matchId), res.result.data)
       this.setData({ cpData: res.result.data, loading: false })
       if (!nickname || nickname === '匿名同事') {
         this.promptSetNickname()
@@ -87,6 +116,9 @@ Page({
         name: 'get_cp_result',
         data: { matchId }
       })
+      if (res && res.result && res.result.code === 0) {
+        cache.setSync(cpCacheKey(matchId), res.result.data)
+      }
       this.processCPResult(res, matchId, this.data.nickname)
     } catch (err) {
       console.error(err)

@@ -3,6 +3,7 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 
 exports.main = async (event) => {
+  if (event && event.__warmup) return { code: 0, warmup: true }
   const wxContext = cloud.getWXContext()
   const openid = wxContext.OPENID
   const { personaId } = event

@@ -3,19 +3,29 @@ const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 const db = cloud.database()
+const _ = db.command
 const usersCollection = db.collection('users')
 const personasCollection = db.collection('personas')
 
 async function generateMatchCode() {
-  for (let i = 0; i < 10; i++) {
-    const code = String(Math.floor(100000 + Math.random() * 900000))
-    const exist = await usersCollection.where({ matchCode: code }).count()
-    if (exist.total === 0) return code
+  // 一次生成 10 个候选码，一次 where in 查库，挑出未使用的
+  const candidates = []
+  const seen = new Set()
+  while (candidates.length < 10) {
+    const c = String(Math.floor(100000 + Math.random() * 900000))
+    if (!seen.has(c)) { seen.add(c); candidates.push(c) }
   }
+  const exist = await usersCollection.where({ matchCode: _.in(candidates) })
+    .field({ matchCode: true }).get()
+  const used = new Set(exist.data.map(u => u.matchCode))
+  const free = candidates.find(c => !used.has(c))
+  if (free) return free
+  // 极小概率全部冲突：再随机一个（可能仍冲突，但唯一索引会兜底）
   return String(Math.floor(100000 + Math.random() * 900000))
 }
 
 exports.main = async (event, context) => {
+  if (event && event.__warmup) return { code: 0, warmup: true }
   const wxContext = cloud.getWXContext()
   const openid = wxContext.OPENID
   const { userInfo, inviterId } = event

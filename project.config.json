@@ -46,7 +46,7 @@
     "disableSWC": true
   },
   "compileType": "miniprogram",
-  "libVersion": "2.30.0",
+  "libVersion": "3.17.1",
   "appid": "wx29bb7f338a060ae7",
   "projectname": "JOB-CPTI-v2",
   "condition": {},

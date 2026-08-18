@@ -1,5 +1,8 @@
 // pages/result-single/result-single.js
 const app = getApp()
+const cache = require('../../utils/cache.js')
+
+function personaCacheKey(id) { return `persona_${id}` }
 
 Page({
   data: {
@@ -16,11 +19,26 @@ Page({
 
     // 尝试从缓存读用户信息
     let userInfo = app.globalData.userInfo || null
-
-    // 不需要 user_init 时直接用缓存；需要时并行发出
     const needsInit = !userInfo
 
     if (personaId) {
+      // 先尝试本地缓存的 persona，命中则立即渲染，云调用可跳过或后台刷新
+      const cachedPersona = cache.getSync(personaCacheKey(personaId))
+      if (cachedPersona) {
+        this.applyPersona(cachedPersona, userInfo)
+        // 后台懒发 user_init 只为拿 nickname（无 userInfo 时）
+        if (needsInit) {
+          this.fetchUserInit().then(u => {
+            if (u) this.setData({
+              nickname: u.nickname || this.data.nickname,
+              matchCode: u.matchCode || this.data.matchCode
+            })
+          })
+        }
+        return
+      }
+
+      // 未命中缓存：并行 user_init + get_persona_detail
       const [initRes, personaRes] = await Promise.all([
         needsInit ? wx.cloud.callFunction({ name: 'user_init' }).catch(e => {
           console.error('result-single user_init error:', e)
@@ -36,26 +54,17 @@ Page({
       if (initRes && initRes.result && initRes.result.code === 0) {
         userInfo = initRes.result.data
         app.globalData.userInfo = userInfo
-        if (userInfo.openid) app.globalData.openid = userInfo.openid
+        if (userInfo.openid) {
+          app.globalData.openid = userInfo.openid
+          cache.setSync('openid', userInfo.openid)
+        }
       }
 
       // 处理 persona 结果
       if (personaRes && personaRes.result && personaRes.result.code === 0) {
         const persona = personaRes.result.data.persona
-        // 优先使用本地缓存的人格图
-        const cachedAvatar = app.globalData.personaImageCache[persona.personaId]
-        if (cachedAvatar) persona.avatarUrl = cachedAvatar
-        const lastResult = app.globalData.lastResult || {}
-        const nickname = (userInfo && userInfo.nickname) || '匿名同事'
-        this.setData({
-          persona,
-          matchCode: (userInfo && userInfo.matchCode) || lastResult.matchCode || '',
-          nickname,
-          loading: false
-        })
-        if (!nickname || nickname === '匿名同事') {
-          this.promptSetNickname()
-        }
+        cache.setSync(personaCacheKey(persona.personaId), persona)
+        this.applyPersona(persona, userInfo)
         return
       }
 
@@ -73,7 +82,10 @@ Page({
           if (initRes.result && initRes.result.code === 0) {
             userInfo = initRes.result.data
             app.globalData.userInfo = userInfo
-            if (userInfo.openid) app.globalData.openid = userInfo.openid
+            if (userInfo.openid) {
+              app.globalData.openid = userInfo.openid
+              cache.setSync('openid', userInfo.openid)
+            }
           }
         } catch (e) {
           console.error('result-single user_init error:', e)
@@ -90,6 +102,37 @@ Page({
           success: () => wx.redirectTo({ url: '/pages/home/home' })
         })
       }
+    }
+  },
+
+  fetchUserInit() {
+    return wx.cloud.callFunction({ name: 'user_init' }).then(res => {
+      if (res.result && res.result.code === 0) {
+        const u = res.result.data
+        app.globalData.userInfo = u
+        if (u.openid) {
+          app.globalData.openid = u.openid
+          cache.setSync('openid', u.openid)
+        }
+        return u
+      }
+      return null
+    }).catch(e => { console.error('user_init error:', e); return null })
+  },
+
+  applyPersona(persona, userInfo) {
+    const cachedAvatar = app.globalData.personaImageCache[persona.personaId]
+    if (cachedAvatar) persona.avatarUrl = cachedAvatar
+    const lastResult = app.globalData.lastResult || {}
+    const nickname = (userInfo && userInfo.nickname) || '匿名同事'
+    this.setData({
+      persona,
+      matchCode: (userInfo && userInfo.matchCode) || lastResult.matchCode || '',
+      nickname,
+      loading: false
+    })
+    if (!nickname || nickname === '匿名同事') {
+      this.promptSetNickname()
     }
   },
 
@@ -121,6 +164,14 @@ Page({
       return
     }
 
+    // 尝试本地缓存
+    const cached = cache.getSync(personaCacheKey(pid))
+    if (cached) {
+      const resolvedNickname = nickname || (app.globalData.userInfo && app.globalData.userInfo.nickname) || '匿名同事'
+      this.applyPersona(cached, { nickname: resolvedNickname, matchCode })
+      return
+    }
+
     this.setData({ loading: true })
     try {
       const res = await wx.cloud.callFunction({
@@ -129,20 +180,9 @@ Page({
       })
       if (res.result && res.result.code === 0) {
         const persona = res.result.data.persona
-        // 优先使用本地缓存的人格图
-        const cachedAvatar = app.globalData.personaImageCache[persona.personaId]
-        if (cachedAvatar) persona.avatarUrl = cachedAvatar
-        const lastResult = app.globalData.lastResult || {}
+        cache.setSync(personaCacheKey(persona.personaId), persona)
         const resolvedNickname = nickname || (app.globalData.userInfo && app.globalData.userInfo.nickname) || '匿名同事'
-        this.setData({
-          persona,
-          matchCode: matchCode || lastResult.matchCode || '',
-          nickname: resolvedNickname,
-          loading: false
-        })
-        if (!resolvedNickname || resolvedNickname === '匿名同事') {
-          this.promptSetNickname()
-        }
+        this.applyPersona(persona, { nickname: resolvedNickname, matchCode })
       } else {
         wx.showModal({
           title: '加载失败',
