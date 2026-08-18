@@ -1,0 +1,21 @@
+miniprogram/pages/result-cp/result-cp.js
+  s_3a36c2857ba8b5::t_a66bee8041978b 144
+miniprogram/pages/result-single/result-single.js
+  s_3a36c2857ba8b5::t_fd7c3cf4faf9a1 229
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.40-trip",
+  "base_commit_sha": "fea6c38e8d4f10ff2887eb1d7cc214ee980b99b4",
+  "prompts": {},
+  "sessions": {
+    "s_3a36c2857ba8b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "114ad18c-51fa-4bc6-9775-2161cdbf772b",
+        "model": "arn:aws:bedrock:us-west-2:466494951737:application-inference-profile/rf6www9ej5dq"
+      },
+      "human_author": "mlweng <mlweng@trip.com>"
+    }
+  }
+}
