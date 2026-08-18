@@ -1,4 +1,5 @@
 const app = getApp()
+const cache = require('../../utils/cache.js')
 const LOADING_TEXTS = [
   '正在分析你的职场基因...',
   '扫描你的11种人格倾向...',
@@ -39,6 +40,11 @@ Page({
         console.log('loading submit_answers 返回:', data)
         app.globalData.lastResult = data
         app.globalData.userInfo = null  // 清除缓存，让下次重新获取最新数据
+
+        // 重测后清理与结果相关的本地缓存（CP 列表、所有 CP 详情）
+        // persona_${id} 缓存的是静态人格详情，按 id 隔离，无需清
+        cache.remove('my_cps_list')
+        cache.removeByPrefix('cp_result_')
 
         if (this.textTimer) clearInterval(this.textTimer)
         // 如果匹配成功，跳CP结果页

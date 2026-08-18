@@ -33,4 +33,16 @@ function remove(name) {
   try { wx.removeStorageSync(k) } catch (e) {}
 }
 
-module.exports = { getSync, setSync, remove }
+// 移除所有以 prefix 开头的缓存项（如 'cp_result_'）
+function removeByPrefix(prefix) {
+  const fullPrefix = key(prefix)
+  Object.keys(memory).forEach(k => { if (k.startsWith(fullPrefix)) delete memory[k] })
+  try {
+    const info = wx.getStorageInfoSync()
+    ;(info.keys || []).forEach(k => {
+      if (k.startsWith(fullPrefix)) { try { wx.removeStorageSync(k) } catch (e) {} }
+    })
+  } catch (e) {}
+}
+
+module.exports = { getSync, setSync, remove, removeByPrefix }
