@@ -1,0 +1,19 @@
+miniprogram/pages/home/home.wxml
+  s_3a36c2857ba8b5::t_54fdbf6edd1b7e 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.40-trip",
+  "base_commit_sha": "d8182c7f8d5be32bcdc6fbdb35f90d8f45c28ab7",
+  "prompts": {},
+  "sessions": {
+    "s_3a36c2857ba8b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "114ad18c-51fa-4bc6-9775-2161cdbf772b",
+        "model": "arn:aws:bedrock:us-west-2:466494951737:application-inference-profile/rf6www9ej5dq"
+      },
+      "human_author": "mlweng <mlweng@trip.com>"
+    }
+  }
+}
