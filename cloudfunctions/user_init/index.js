@@ -21,7 +21,11 @@ exports.main = async (event, context) => {
   const { userInfo, inviterId } = event
 
   try {
-    const existRes = await usersCollection.where({ openid }).get()
+    const existRes = await usersCollection.where({ openid })
+      .field({
+        openid: true, matchCode: true, nickname: true,
+        avatarUrl: true, hasCompleted: true, personaId: true
+      }).get()
 
     let user
     if (existRes.data.length === 0) {
@@ -42,37 +46,45 @@ exports.main = async (event, context) => {
       user = newUser
     } else {
       user = existRes.data[0]
-      if (userInfo && userInfo.nickname) {
+      // 只在昵称真正变化时才更新数据库（避免不必要的写操作）
+      if (userInfo && userInfo.nickname && userInfo.nickname !== user.nickname) {
         await usersCollection.doc(user._id).update({
           data: {
             nickname: userInfo.nickname,
-            avatarUrl: userInfo.avatarUrl,
+            avatarUrl: userInfo.avatarUrl || user.avatarUrl || '',
             updatedAt: new Date()
           }
         })
-        // 同步更新内存中的 user 对象，确保返回最新数据
         user.nickname = userInfo.nickname
-        user.avatarUrl = userInfo.avatarUrl || ''
+        user.avatarUrl = userInfo.avatarUrl || user.avatarUrl || ''
       }
     }
 
+    // 并行查询邀请人信息和人格名（互不依赖，合并为一次网络往返）
+    const [inviterRes, pRes] = await Promise.all([
+      (inviterId && inviterId !== openid)
+        ? usersCollection.where({ openid: inviterId })
+            .field({ openid: true, nickname: true, avatarUrl: true, hasCompleted: true }).get()
+        : Promise.resolve(null),
+      user.personaId
+        ? personasCollection.where({ personaId: user.personaId })
+            .field({ name: true }).get()
+        : Promise.resolve(null)
+    ])
+
     let inviterInfo = null
-    if (inviterId && inviterId !== openid) {
-      const inviterRes = await usersCollection.where({ openid: inviterId }).get()
-      if (inviterRes.data.length > 0) {
-        inviterInfo = {
-          openid: inviterId,
-          nickname: inviterRes.data[0].nickname,
-          avatarUrl: inviterRes.data[0].avatarUrl,
-          hasCompleted: inviterRes.data[0].hasCompleted
-        }
+    if (inviterRes && inviterRes.data.length > 0) {
+      inviterInfo = {
+        openid: inviterId,
+        nickname: inviterRes.data[0].nickname,
+        avatarUrl: inviterRes.data[0].avatarUrl,
+        hasCompleted: inviterRes.data[0].hasCompleted
       }
     }
 
     let personaName = ''
-    if (user.personaId) {
-      const pRes = await personasCollection.where({ personaId: user.personaId }).get()
-      if (pRes.data.length > 0) personaName = pRes.data[0].name
+    if (pRes && pRes.data.length > 0) {
+      personaName = pRes.data[0].name
     }
 
     return {

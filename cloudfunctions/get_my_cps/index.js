@@ -14,16 +14,15 @@ exports.main = async (event) => {
 
   try {
     // 查询自己参与的所有匹配
-    const countRes = await matchesCollection
-      .where(_.or([{ userA: openid }, { userB: openid }])).count()
-    const total = countRes.total
-
     const listRes = await matchesCollection
       .where(_.or([{ userA: openid }, { userB: openid }]))
       .orderBy('createdAt', 'desc')
       .skip((page - 1) * pageSize)
       .limit(pageSize)
+      .field({ userA: true, userB: true, cpKey: true, createdAt: true })
       .get()
+
+    const total = listRes.data.length
 
     if (listRes.data.length === 0) {
       return { code: 0, data: { total: 0, list: [] } }
@@ -40,8 +39,10 @@ exports.main = async (event) => {
 
     // 批量拉用户和 CP 模板
     const [uRes, cRes] = await Promise.all([
-      usersCollection.where({ openid: _.in([...otherOpenids]) }).get(),
-      cpCollection.where({ cpKey: _.in([...cpKeys]) }).get()
+      usersCollection.where({ openid: _.in([...otherOpenids]) })
+        .field({ openid: true, nickname: true, avatarUrl: true, matchCode: true }).get(),
+      cpCollection.where({ cpKey: _.in([...cpKeys]) })
+        .field({ cpKey: true, cpName: true }).get()
     ])
 
     const userMap = {}
@@ -56,7 +57,7 @@ exports.main = async (event) => {
       return {
         matchId: m._id,
         otherUser: {
-          nickname: u.nickname || '匿名同事',
+          nickname: (u.nickname && u.nickname !== '匿名同事') ? u.nickname : (u.matchCode || '匿名同事'),
           avatarUrl: u.avatarUrl || ''
         },
         cpName: c.cpName || '',

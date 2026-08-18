@@ -5,7 +5,8 @@ Page({
   data: {
     cpData: null,
     nickname: '',
-    loading: true
+    loading: true,
+    qrcodePath: app.globalData.qrcodePath || 'cloud://job-cpti-dev-d6g8x3zkb2ae306f8.6a6f-job-cpti-dev-d6g8x3zkb2ae306f8-1457130836/others/wxcode.png'
   },
 
   async onLoad(options) {
@@ -14,58 +15,83 @@ Page({
       wx.showModal({ title: '参数错误', content: '缺少匹配ID', showCancel: false })
       return
     }
-    // 获取最新用户信息（openid + nickname）
-    try {
-      const initRes = await wx.cloud.callFunction({ name: 'user_init', data: {} })
-      if (initRes.result && initRes.result.code === 0) {
-        app.globalData.openid = initRes.result.data.openid
-        this.setData({ nickname: initRes.result.data.nickname || '匿名同事' })
-      }
-    } catch (e) {
-      console.error('获取用户信息失败', e)
+
+    // 尝试从缓存读用户信息
+    let userInfo = app.globalData.userInfo || null
+    const needsInit = !userInfo
+
+    // 并行发出 user_init（如果需要）和 get_cp_result
+    const [initRes, cpRes] = await Promise.all([
+      needsInit ? wx.cloud.callFunction({ name: 'user_init' }).catch(e => {
+        console.error('获取用户信息失败', e)
+        return null
+      }) : Promise.resolve(null),
+      this.callGetCPResult(matchId)
+    ])
+
+    // 处理 user_init 结果
+    if (initRes && initRes.result && initRes.result.code === 0) {
+      userInfo = initRes.result.data
+      app.globalData.userInfo = userInfo
+      if (userInfo.openid) app.globalData.openid = userInfo.openid
     }
-    await this.loadCP(matchId)
+
+    const nickname = (userInfo && userInfo.nickname) || '匿名同事'
+    this.setData({ nickname })
+
+    // 处理 cp 结果
+    this.processCPResult(cpRes, matchId, nickname)
   },
 
-  async loadCP(matchId, retryCount) {
-    retryCount = retryCount || 0
+  async callGetCPResult(matchId) {
+    try {
+      return await wx.cloud.callFunction({
+        name: 'get_cp_result',
+        data: { matchId }
+      })
+    } catch (err) {
+      console.error(err)
+      return null
+    }
+  },
+
+  processCPResult(res, matchId, nickname) {
+    if (res && res.result && res.result.code === 0) {
+      this.setData({ cpData: res.result.data, loading: false })
+      if (!nickname || nickname === '匿名同事') {
+        this.promptSetNickname()
+      }
+    } else if (res && res.result && res.result.code === 3007) {
+      // 权限校验失败，可能刚创建匹配，延迟重试
+      console.log('get_cp_result 权限校验失败，1s 后重试')
+      setTimeout(() => this.retryLoadCP(matchId, 1), 1000)
+    } else if (res && res.result && res.result.code === 3009) {
+      wx.showModal({
+        title: '登录态异常',
+        content: '请退出小程序重新进入后再试',
+        showCancel: false,
+        success: () => wx.reLaunch({ url: '/pages/home/home' })
+      })
+    } else {
+      wx.showModal({
+        title: '加载失败',
+        content: (res && res.result && res.result.message) || '未知错误',
+        showCancel: false
+      })
+    }
+  },
+
+  async retryLoadCP(matchId, retryCount) {
     try {
       const res = await wx.cloud.callFunction({
         name: 'get_cp_result',
         data: { matchId }
       })
-      if (res.result && res.result.code === 0) {
-        this.setData({ cpData: res.result.data, loading: false })
-
-        // CP 结果页展示后，如果未设置昵称，提示设置（分享前）
-        if (!this.data.nickname || this.data.nickname === '匿名同事') {
-          this.promptSetNickname()
-        }
-      } else if (res.result && res.result.code === 3007 && retryCount < 3) {
-        // 权限校验失败，可能是刚创建匹配，重试
-        console.log(`get_cp_result 重试 ${retryCount + 1}/3`)
-        await new Promise(r => setTimeout(r, 1000))
-        await this.loadCP(matchId, retryCount + 1)
-      } else if (res.result && res.result.code === 3009) {
-        // 登录态异常
-        wx.showModal({
-          title: '登录态异常',
-          content: '请退出小程序重新进入后再试',
-          showCancel: false,
-          success: () => wx.reLaunch({ url: '/pages/home/home' })
-        })
-      } else {
-        wx.showModal({
-          title: '加载失败',
-          content: (res.result && res.result.message) || '未知错误',
-          showCancel: false
-        })
-      }
+      this.processCPResult(res, matchId, this.data.nickname)
     } catch (err) {
       console.error(err)
       if (retryCount < 3) {
-        await new Promise(r => setTimeout(r, 1000))
-        await this.loadCP(matchId, retryCount + 1)
+        setTimeout(() => this.retryLoadCP(matchId, retryCount + 1), 1000)
       }
     }
   },
@@ -94,6 +120,7 @@ Page({
             })
             if (initRes.result && initRes.result.code === 0) {
               this.setData({ nickname })
+              if (app.globalData.userInfo) app.globalData.userInfo.nickname = nickname
               wx.showToast({ title: '设置成功', icon: 'success' })
             }
           } catch (err) {

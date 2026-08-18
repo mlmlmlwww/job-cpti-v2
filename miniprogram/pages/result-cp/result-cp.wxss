@@ -97,3 +97,13 @@
   justify-content: center;
 }
 .loading-text { color: rgba(255, 255, 255, 0.6); }
+
+/* 小程序码浮层 */
+.qrcode-float {
+  position: fixed;
+  right: 24rpx;
+  bottom: 60rpx;
+  width: 160rpx;
+  height: 160rpx;
+  z-index: 100;
+}

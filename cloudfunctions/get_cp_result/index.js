@@ -22,7 +22,8 @@ exports.main = async (event) => {
   if (!matchId) return { code: 2001, message: '缺少 matchId' }
 
   try {
-    const mRes = await matchesCollection.doc(matchId).get()
+    const mRes = await matchesCollection.doc(matchId)
+      .field({ userA: true, userB: true, cpKey: true, personaAId: true, personaBId: true }).get()
     if (!mRes.data) return { code: 3006, message: '匹配不存在' }
     const match = mRes.data
 
@@ -33,23 +34,24 @@ exports.main = async (event) => {
       return { code: 3007, message: '无权访问' }
     }
 
-    // 拉 CP 模板
-    const cpRes = await cpCollection.where({ cpKey: match.cpKey }).get()
+    // 拉 CP 模板、用户信息、人格名（并行，互不依赖）
+    const [cpRes, usersRes, pRes] = await Promise.all([
+      cpCollection.where({ cpKey: match.cpKey })
+        .field({ cpKey: true, cpName: true, cpDescription: true, shareImage: true }).get(),
+      usersCollection.where({ openid: db.command.in([match.userA, match.userB]) })
+        .field({ openid: true, nickname: true, avatarUrl: true, matchCode: true }).get(),
+      personasCollection.where({ personaId: db.command.in([match.personaAId, match.personaBId]) })
+        .field({ personaId: true, name: true }).get()
+    ])
+
     if (cpRes.data.length === 0) return { code: 3008, message: 'CP 模板不存在' }
     const cpTemplate = cpRes.data[0]
 
-    // 拉两方用户信息
-    const [uaRes, ubRes] = await Promise.all([
-      usersCollection.where({ openid: match.userA }).get(),
-      usersCollection.where({ openid: match.userB }).get()
-    ])
-    const userA = uaRes.data[0] || {}
-    const userB = ubRes.data[0] || {}
+    const userMap = {}
+    usersRes.data.forEach(u => { userMap[u.openid] = u })
+    const userA = userMap[match.userA] || {}
+    const userB = userMap[match.userB] || {}
 
-    // 拉两方人格名
-    const pRes = await personasCollection
-      .where({ personaId: db.command.in([match.personaAId, match.personaBId]) })
-      .get()
     const nameMap = {}
     pRes.data.forEach(p => { nameMap[p.personaId] = p.name })
 
@@ -63,14 +65,14 @@ exports.main = async (event) => {
         shareImage: cpTemplate.shareImage || '',
         userA: {
           openid: userA.openid,
-          nickname: userA.nickname || '匿名同事',
+          nickname: (userA.nickname && userA.nickname !== '匿名同事') ? userA.nickname : (userA.matchCode || '匿名同事'),
           avatarUrl: userA.avatarUrl || '',
           personaId: match.personaAId,
           personaName: nameMap[match.personaAId] || ''
         },
         userB: {
           openid: userB.openid,
-          nickname: userB.nickname || '匿名同事',
+          nickname: (userB.nickname && userB.nickname !== '匿名同事') ? userB.nickname : (userB.matchCode || '匿名同事'),
           avatarUrl: userB.avatarUrl || '',
           personaId: match.personaBId,
           personaName: nameMap[match.personaBId] || ''

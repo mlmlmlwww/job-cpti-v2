@@ -23,10 +23,21 @@ Page({
     try {
       let questions = app.globalData.questions
       if (!questions) {
+        // 读本地缓存（当天有效）
+        const today = new Date().toDateString()
+        const cacheDate = wx.getStorageSync('cpti_questions_date')
+        if (cacheDate === today) {
+          questions = wx.getStorageSync('cpti_questions')
+        }
+      }
+      if (!questions || questions.length === 0) {
         const res = await wx.cloud.callFunction({ name: 'get_questions' })
         if (res.result && res.result.code === 0) {
           questions = res.result.data.questions
           app.globalData.questions = questions
+          // 写入本地缓存
+          wx.setStorageSync('cpti_questions', questions)
+          wx.setStorageSync('cpti_questions_date', new Date().toDateString())
         }
       }
       if (!questions || questions.length === 0) {

@@ -32,6 +32,7 @@ Page({
       if (res.result && res.result.code === 0) {
         const data = res.result.data
         app.globalData.openid = data.openid
+        app.globalData.userInfo = data
         const nickname = data.nickname || '匿名同事'
         this.setData({
           hasCompleted: data.hasCompleted,

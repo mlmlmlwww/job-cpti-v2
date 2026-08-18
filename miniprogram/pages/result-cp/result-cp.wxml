@@ -27,7 +27,7 @@
   <!-- CTA -->
   <view class="cta-section">
     <button class="btn-primary main-btn" open-type="share">
-      分享我们的 CP
+      分享我的CP
     </button>
     <button class="btn-secondary main-btn" bindtap="onInputCode">
       测试其他 CP
@@ -37,6 +37,9 @@
   <view class="footer-section">
     <view class="text-link" bindtap="onGoHome">返回首页 ›</view>
   </view>
+
+  <!-- 小程序码 -->
+  <image class="qrcode-float" src="{{qrcodePath}}" mode="aspectFit"></image>
 </view>
 
 <view class="loading-view" wx:if="{{loading}}">

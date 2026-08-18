@@ -21,14 +21,13 @@
   <view class="match-code-card" wx:if="{{matchCode}}">
     <view class="match-code-label">🎯 你的匹配码</view>
     <view class="match-code-value" bindtap="onCopyCode">{{matchCode}}</view>
-    <view class="match-code-tip">让同事输入这个码，看看你俩是什么 CP</view>
+    <view class="match-code-tip">让TA输入匹配码，看看你俩是什么CP</view>
   </view>
 
   <!-- CTA -->
   <view class="cta-section">
     <button class="btn-primary main-btn multi-line-btn" open-type="share">
-      <view>分享给同事</view>
-      <view class="btn-sub-line">测CP</view>
+      分享测CP
     </button>
     <button class="btn-secondary main-btn" bindtap="onInputCode">
       输入 TA 的匹配码
@@ -40,6 +39,9 @@
     <view class="text-link" bindtap="onViewMyCPs">查看我的 CP 列表 ›</view>
     <view class="text-link" bindtap="onRestart">重新测试</view>
   </view>
+
+  <!-- 小程序码 -->
+  <image class="qrcode-float" src="{{qrcodePath}}" mode="aspectFit"></image>
 </view>
 
 <view class="loading-view" wx:if="{{loading}}">

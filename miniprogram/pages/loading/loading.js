@@ -38,6 +38,7 @@ Page({
         const data = res.result.data
         console.log('loading submit_answers 返回:', data)
         app.globalData.lastResult = data
+        app.globalData.userInfo = null  // 清除缓存，让下次重新获取最新数据
 
         if (this.textTimer) clearInterval(this.textTimer)
         // 如果匹配成功，跳CP结果页
