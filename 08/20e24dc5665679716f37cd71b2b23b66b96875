@@ -1,0 +1,41 @@
+miniprogram/utils/cache.js
+  s_3a36c2857ba8b5::t_6a70a5f0dd2cff 1-36
+cloudfunctions/get_questions/index.js
+  s_3a36c2857ba8b5::t_27dc280c6f5ecb 5-6
+miniprogram/app.js
+  s_3a36c2857ba8b5::t_403c86679fe9d3 2-3,16-18
+  s_3a36c2857ba8b5::t_ad15f652e80712 39,41-44
+cloudfunctions/get_my_cps/index.js
+  s_3a36c2857ba8b5::t_bd125512de3a88 11
+cloudfunctions/get_persona_detail/index.js
+  s_3a36c2857ba8b5::t_5220d61e92a73d 6
+cloudfunctions/get_cp_result/index.js
+  s_3a36c2857ba8b5::t_21cc5882a75d06 9
+  s_3a36c2857ba8b5::t_27f628830b4a07 4,24-43,52-57,72,79
+miniprogram/pages/result-single/result-single.js
+  s_3a36c2857ba8b5::t_23d5ca405950ae 3-5,25-41,57-60,66-67,85-88,108-138,167-174,183,185
+miniprogram/pages/my-cps/my-cps.js
+  s_3a36c2857ba8b5::t_a1c21bb28606c1 2-4,12-27,30,37-38,40-41,44-45,49
+miniprogram/pages/result-cp/result-cp.js
+  s_3a36c2857ba8b5::t_7bb1019099afdb 3-5,26-51,88
+  s_3a36c2857ba8b5::t_8903bb85d49746 119-121
+cloudfunctions/user_init/index.js
+  s_3a36c2857ba8b5::t_0bea9c8b6ed2a6 6,11-16,18-23
+  s_3a36c2857ba8b5::t_09adfb325eeb07 28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.40-trip",
+  "base_commit_sha": "0820e24dc5665679716f37cd71b2b23b66b96875",
+  "prompts": {},
+  "sessions": {
+    "s_3a36c2857ba8b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "114ad18c-51fa-4bc6-9775-2161cdbf772b",
+        "model": "arn:aws:bedrock:us-west-2:466494951737:application-inference-profile/rf6www9ej5dq"
+      },
+      "human_author": "mlweng <mlweng@trip.com>"
+    }
+  }
+}
