@@ -226,7 +226,7 @@ Page({
       title: '设置昵称',
       content: '设置昵称，朋友更容易认出你',
       editable: true,
-      placeholderText: '输入你的昵称',
+      placeholderText: '',
       success: async (res) => {
         if (res.confirm && res.content && res.content.trim()) {
           const nickname = res.content.trim()
