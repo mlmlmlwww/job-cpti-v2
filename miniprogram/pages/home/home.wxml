@@ -10,7 +10,7 @@
       开始测试
     </button>
     <button class="btn-primary main-btn" bindtap="onViewResult" wx:if="{{hasCompleted}}">
-      查看我的结果 · {{personaName}}
+      查看我的结果
     </button>
     <button class="btn-secondary main-btn" bindtap="onInputCode" wx:if="{{hasCompleted}}">
       输入TA的匹配码

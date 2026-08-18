@@ -4,7 +4,6 @@ const app = getApp()
 Page({
   data: {
     hasCompleted: false,
-    personaName: '',
     nickname: '',
     loading: false
   },
@@ -36,7 +35,6 @@ Page({
         const nickname = data.nickname || '匿名同事'
         this.setData({
           hasCompleted: data.hasCompleted,
-          personaName: data.personaName || '',
           nickname,
           _initialized: true
         })
