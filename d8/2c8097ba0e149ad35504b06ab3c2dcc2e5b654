@@ -1,0 +1,38 @@
+cloudfunctions/submit_answers/index.js
+  s_3a36c2857ba8b5::t_ea492adf5fe48e 13
+cloudfunctions/backfill_dimensions/index.js
+  s_3a36c2857ba8b5::t_9459986ce8d796 12
+miniprogram/utils/dimensions.js
+  s_3a36c2857ba8b5::t_872b6f47a6ed57 2,7-8
+miniprogram/pages/result-single/result-single.wxml
+  s_3a36c2857ba8b5::t_67012c62fc2e30 37,45-46
+  s_3a36c2857ba8b5::t_51dc2b1992ff41 39
+  s_3a36c2857ba8b5::t_08f0cc66dc1519 44
+miniprogram/pages/result-cp/result-cp.wxml
+  s_3a36c2857ba8b5::t_f27aa7eb517890 54-55,61-62
+  s_3a36c2857ba8b5::t_978000e5965350 43
+  s_3a36c2857ba8b5::t_f695ff5945f522 41,53,60
+miniprogram/pages/result-single/result-single.wxss
+  s_3a36c2857ba8b5::t_6373337ed077ce 145,150
+  s_3a36c2857ba8b5::t_a7e0110a65fdb2 154
+miniprogram/pages/result-cp/result-cp.wxss
+  s_3a36c2857ba8b5::t_22360129eac1be 158,163
+miniprogram/utils/cache.js
+  s_3a36c2857ba8b5::t_cb5d57f78759d3 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.40-trip",
+  "base_commit_sha": "d82c8097ba0e149ad35504b06ab3c2dcc2e5b654",
+  "prompts": {},
+  "sessions": {
+    "s_3a36c2857ba8b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "114ad18c-51fa-4bc6-9775-2161cdbf772b",
+        "model": "arn:aws:bedrock:us-west-2:466494951737:application-inference-profile/rf6www9ej5dq"
+      },
+      "human_author": "mlweng <mlweng@trip.com>"
+    }
+  }
+}
