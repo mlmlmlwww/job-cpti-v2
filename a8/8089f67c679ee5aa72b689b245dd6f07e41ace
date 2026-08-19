@@ -1,0 +1,33 @@
+miniprogram/pages/result-cp/result-cp.js
+  s_3a36c2857ba8b5::t_d9dd1a66966f4e 145-146
+  s_3a36c2857ba8b5::t_c4a5acb1b1610f 12-13,19-23,40
+  s_3a36c2857ba8b5::t_f2ceabdfc272f5 82
+  s_3a36c2857ba8b5::t_ca27ea2c897958 80-81,90-92,99-100
+  s_3a36c2857ba8b5::t_ef47af57771f3b 6,18,24-29,31-36,38-39,41-62
+  s_3a36c2857ba8b5::t_0fba7b117db445 147
+  s_3a36c2857ba8b5::t_9247dd8ac7a73f 30,37
+  s_3a36c2857ba8b5::t_0b57d66f3d6abd 101
+miniprogram/pages/result-cp/result-cp.wxml
+  s_3a36c2857ba8b5::t_cf3def24c95cb6 24-25
+  s_3a36c2857ba8b5::t_d0af4061a1ce95 23,26
+miniprogram/pages/result-cp/result-cp.wxss
+  s_3a36c2857ba8b5::t_d7d9fccfb8e9f9 84-89,91,95
+  s_3a36c2857ba8b5::t_edd452f379c25e 81
+  s_3a36c2857ba8b5::t_0cc65f0a723c8b 90,92-94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.40-trip",
+  "base_commit_sha": "a88089f67c679ee5aa72b689b245dd6f07e41ace",
+  "prompts": {},
+  "sessions": {
+    "s_3a36c2857ba8b5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "114ad18c-51fa-4bc6-9775-2161cdbf772b",
+        "model": "arn:aws:bedrock:us-west-2:466494951737:application-inference-profile/rf6www9ej5dq"
+      },
+      "human_author": "mlweng <mlweng@trip.com>"
+    }
+  }
+}
