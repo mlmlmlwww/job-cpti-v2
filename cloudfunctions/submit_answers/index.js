@@ -10,6 +10,29 @@ const personasCollection = db.collection('personas')
 const matchesCollection = db.collection('matches')
 
 const PERSONA_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+const DIMENSION_NAMES = ['人品', '焦虑', '努力', '表演']
+
+// 简单符号累加：+ 题贡献 +answer(1~5)，- 题贡献 -answer(-5~-1)
+// 满格取 5 * 该维度题数，用于条形图归一
+function calculateDimensions(answers, questions) {
+  const scores = {}
+  const max = {}
+  DIMENSION_NAMES.forEach(n => { scores[n] = 0; max[n] = 0 })
+
+  questions.forEach((q, i) => {
+    const sd = q.surfaceDimension
+    if (!sd || typeof sd !== 'string' || sd.length < 2) return
+    const sign = sd.slice(-1)
+    const name = sd.slice(0, -1)
+    if (!DIMENSION_NAMES.includes(name)) return
+    const ans = answers[i] || 3
+    const contrib = sign === '+' ? ans : -ans
+    scores[name] += contrib
+    max[name] += 5
+  })
+
+  return { dimensionScores: scores, dimensionMax: max }
+}
 
 async function generateMatchCode() {
   for (let i = 0; i < 10; i++) {
@@ -138,6 +161,7 @@ exports.main = async (event, context) => {
     if (qRes.data.length !== 32) return { code: 5001, message: '题库不完整' }
 
     const result = calculatePersona(answers, qRes.data)
+    const dims = calculateDimensions(answers, qRes.data)
 
     const pRes = await personasCollection.where({ personaId: result.personaId }).get()
     const personaName = pRes.data.length > 0 ? pRes.data[0].name : ''
@@ -150,6 +174,8 @@ exports.main = async (event, context) => {
         data: {
           personaId: result.personaId,
           personaScores: _.set(result.personaScores),
+          dimensionScores: _.set(dims.dimensionScores),
+          dimensionMax: _.set(dims.dimensionMax),
           answers,
           hasCompleted: true,
           completedAt: new Date(),
@@ -170,6 +196,8 @@ exports.main = async (event, context) => {
           matchCode,
           personaId: result.personaId,
           personaScores: result.personaScores,
+          dimensionScores: dims.dimensionScores,
+          dimensionMax: dims.dimensionMax,
           answers,
           hasCompleted: true,
           completedAt: new Date(),
@@ -195,6 +223,8 @@ exports.main = async (event, context) => {
       personaId: result.personaId,
       personaName,
       personaScores: result.personaScores,
+      dimensionScores: dims.dimensionScores,
+      dimensionMax: dims.dimensionMax,
       matchCode,
       matchResult
     }

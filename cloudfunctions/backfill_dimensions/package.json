@@ -1,0 +1,8 @@
+{
+  "name": "backfill_dimensions",
+  "version": "1.0.0",
+  "description": "回填历史用户的 dimensionScores/dimensionMax（一次性运维工具）",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.1"
+  }
+}

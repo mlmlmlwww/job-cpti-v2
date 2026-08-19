@@ -32,8 +32,8 @@ exports.main = async (event) => {
       .project({
         userA: 1, userB: 1, cpKey: 1, personaAId: 1, personaBId: 1,
         cpArr: { cpKey: 1, cpName: 1, cpDescription: 1, shareImage: 1 },
-        uAArr: { openid: 1, nickname: 1, avatarUrl: 1, matchCode: 1 },
-        uBArr: { openid: 1, nickname: 1, avatarUrl: 1, matchCode: 1 },
+        uAArr: { openid: 1, nickname: 1, avatarUrl: 1, matchCode: 1, dimensionScores: 1, dimensionMax: 1 },
+        uBArr: { openid: 1, nickname: 1, avatarUrl: 1, matchCode: 1, dimensionScores: 1, dimensionMax: 1 },
         pAArr: { personaId: 1, name: 1 },
         pBArr: { personaId: 1, name: 1 }
       })
@@ -69,14 +69,18 @@ exports.main = async (event) => {
           nickname: (userA.nickname && userA.nickname !== '匿名同事') ? userA.nickname : (userA.matchCode || '匿名同事'),
           avatarUrl: userA.avatarUrl || '',
           personaId: match.personaAId,
-          personaName: personaA.name || ''
+          personaName: personaA.name || '',
+          dimensionScores: userA.dimensionScores || null,
+          dimensionMax: userA.dimensionMax || null
         },
         userB: {
           openid: userB.openid,
           nickname: (userB.nickname && userB.nickname !== '匿名同事') ? userB.nickname : (userB.matchCode || '匿名同事'),
           avatarUrl: userB.avatarUrl || '',
           personaId: match.personaBId,
-          personaName: personaB.name || ''
+          personaName: personaB.name || '',
+          dimensionScores: userB.dimensionScores || null,
+          dimensionMax: userB.dimensionMax || null
         }
       }
     }

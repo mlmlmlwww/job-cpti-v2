@@ -1,6 +1,7 @@
 // pages/result-single/result-single.js
 const app = getApp()
 const cache = require('../../utils/cache.js')
+const { buildDimBars } = require('../../utils/dimensions.js')
 
 function personaCacheKey(id) { return `persona_${id}` }
 
@@ -9,8 +10,15 @@ Page({
     persona: null,
     matchCode: '',
     nickname: '',
+    dimBars: [],
     loading: true,
     qrcodePath: app.globalData.qrcodePath || 'cloud://job-cpti-dev-d6g8x3zkb2ae306f8.6a6f-job-cpti-dev-d6g8x3zkb2ae306f8-1457130836/others/wxcode.png'
+  },
+
+  updateDimBars(userInfo) {
+    if (!userInfo) return
+    const bars = buildDimBars(userInfo.dimensionScores, userInfo.dimensionMax)
+    if (bars.length > 0) this.setData({ dimBars: bars })
   },
 
   async onLoad(options) {
@@ -29,10 +37,13 @@ Page({
         // 后台懒发 user_init 只为拿 nickname（无 userInfo 时）
         if (needsInit) {
           this.fetchUserInit().then(u => {
-            if (u) this.setData({
-              nickname: u.nickname || this.data.nickname,
-              matchCode: u.matchCode || this.data.matchCode
-            })
+            if (u) {
+              this.setData({
+                nickname: u.nickname || this.data.nickname,
+                matchCode: u.matchCode || this.data.matchCode
+              })
+              this.updateDimBars(u)
+            }
           })
         }
         return
@@ -131,6 +142,11 @@ Page({
       nickname,
       loading: false
     })
+    // 优先用 userInfo，再回落到 lastResult（刚重测完的场景）
+    this.updateDimBars(userInfo || {
+      dimensionScores: lastResult.dimensionScores,
+      dimensionMax: lastResult.dimensionMax
+    })
     if (!nickname || nickname === '匿名同事') {
       this.promptSetNickname()
     }
@@ -167,8 +183,14 @@ Page({
     // 尝试本地缓存
     const cached = cache.getSync(personaCacheKey(pid))
     if (cached) {
-      const resolvedNickname = nickname || (app.globalData.userInfo && app.globalData.userInfo.nickname) || '匿名同事'
-      this.applyPersona(cached, { nickname: resolvedNickname, matchCode })
+      const gUser = app.globalData.userInfo || {}
+      const resolvedNickname = nickname || gUser.nickname || '匿名同事'
+      this.applyPersona(cached, {
+        nickname: resolvedNickname,
+        matchCode,
+        dimensionScores: gUser.dimensionScores,
+        dimensionMax: gUser.dimensionMax
+      })
       return
     }
 
@@ -181,8 +203,14 @@ Page({
       if (res.result && res.result.code === 0) {
         const persona = res.result.data.persona
         cache.setSync(personaCacheKey(persona.personaId), persona)
-        const resolvedNickname = nickname || (app.globalData.userInfo && app.globalData.userInfo.nickname) || '匿名同事'
-        this.applyPersona(persona, { nickname: resolvedNickname, matchCode })
+        const gUser = app.globalData.userInfo || {}
+        const resolvedNickname = nickname || gUser.nickname || '匿名同事'
+        this.applyPersona(persona, {
+          nickname: resolvedNickname,
+          matchCode,
+          dimensionScores: gUser.dimensionScores,
+          dimensionMax: gUser.dimensionMax
+        })
       } else {
         wx.showModal({
           title: '加载失败',

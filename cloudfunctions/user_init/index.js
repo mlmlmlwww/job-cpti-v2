@@ -34,7 +34,8 @@ exports.main = async (event, context) => {
     const existRes = await usersCollection.where({ openid })
       .field({
         openid: true, matchCode: true, nickname: true,
-        avatarUrl: true, hasCompleted: true, personaId: true
+        avatarUrl: true, hasCompleted: true, personaId: true,
+        dimensionScores: true, dimensionMax: true
       }).get()
 
     let user
@@ -107,6 +108,8 @@ exports.main = async (event, context) => {
         personaName,
         nickname: user.nickname || '匿名同事',
         avatarUrl: user.avatarUrl || '',
+        dimensionScores: user.dimensionScores || null,
+        dimensionMax: user.dimensionMax || null,
         inviterInfo
       }
     }

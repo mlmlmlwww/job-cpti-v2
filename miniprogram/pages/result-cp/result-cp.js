@@ -1,6 +1,7 @@
 // pages/result-cp/result-cp.js
 const app = getApp()
 const cache = require('../../utils/cache.js')
+const { buildDimBars } = require('../../utils/dimensions.js')
 
 function cpCacheKey(id) { return `cp_result_${id}` }
 function personaCacheKey(id) { return `persona_${id}` }
@@ -11,8 +12,32 @@ Page({
     nickname: '',
     meIntro: '',
     otherIntro: '',
+    dimRows: [],
     loading: true,
     qrcodePath: app.globalData.qrcodePath || 'cloud://job-cpti-dev-d6g8x3zkb2ae306f8.6a6f-job-cpti-dev-d6g8x3zkb2ae306f8-1457130836/others/wxcode.png'
+  },
+
+  // 计算 4 维度双方对比行
+  buildDimRows(cpData) {
+    const openid = app.globalData.openid || ''
+    if (!cpData || !cpData.userA || !cpData.userB) return []
+    const me = cpData.userA.openid === openid ? cpData.userA : cpData.userB
+    const other = cpData.userA.openid === openid ? cpData.userB : cpData.userA
+    const meBars = buildDimBars(me.dimensionScores, me.dimensionMax)
+    const otherBars = buildDimBars(other.dimensionScores, other.dimensionMax)
+    if (meBars.length === 0 && otherBars.length === 0) return []
+    return meBars.map((mb, i) => {
+      const ob = otherBars[i] || {}
+      return {
+        name: mb.name,
+        meRatioPct: mb.ratioPct,
+        meDirection: mb.direction,
+        meColor: mb.color,
+        otherRatioPct: ob.ratioPct || 0,
+        otherDirection: ob.direction || 'pos',
+        otherColor: ob.color || mb.color
+      }
+    })
   },
 
   // 根据 openid 计算出"我/对方"的人格与显示名，并拼接人格描述
@@ -78,7 +103,8 @@ Page({
     if (cached) {
       const nickname = (userInfo && userInfo.nickname) || '匿名同事'
       const { meIntro, otherIntro } = this.buildIntro(cached)
-      this.setData({ cpData: cached, nickname, meIntro, otherIntro, loading: false })
+      const dimRows = this.buildDimRows(cached)
+      this.setData({ cpData: cached, nickname, meIntro, otherIntro, dimRows, loading: false })
       this.ensurePersonaSlogans(cached)
       // 后台静默刷新
       if (needsInit) {
@@ -89,7 +115,8 @@ Page({
             if (u.openid) app.globalData.openid = u.openid
             // openid 变化后重新计算 me/other
             const intro = this.buildIntro(this.data.cpData)
-            this.setData({ nickname: u.nickname || nickname, meIntro: intro.meIntro, otherIntro: intro.otherIntro })
+            const rows = this.buildDimRows(this.data.cpData)
+            this.setData({ nickname: u.nickname || nickname, meIntro: intro.meIntro, otherIntro: intro.otherIntro, dimRows: rows })
           }
         }).catch(() => {})
       }
@@ -97,7 +124,8 @@ Page({
         if (res && res.result && res.result.code === 0) {
           cache.setSync(cpCacheKey(matchId), res.result.data)
           const intro = this.buildIntro(res.result.data)
-          this.setData({ cpData: res.result.data, meIntro: intro.meIntro, otherIntro: intro.otherIntro })
+          const rows = this.buildDimRows(res.result.data)
+          this.setData({ cpData: res.result.data, meIntro: intro.meIntro, otherIntro: intro.otherIntro, dimRows: rows })
           this.ensurePersonaSlogans(res.result.data)
         }
       })
@@ -143,7 +171,8 @@ Page({
     if (res && res.result && res.result.code === 0) {
       cache.setSync(cpCacheKey(matchId), res.result.data)
       const { meIntro, otherIntro } = this.buildIntro(res.result.data)
-      this.setData({ cpData: res.result.data, meIntro, otherIntro, loading: false })
+      const dimRows = this.buildDimRows(res.result.data)
+      this.setData({ cpData: res.result.data, meIntro, otherIntro, dimRows, loading: false })
       this.ensurePersonaSlogans(res.result.data)
       if (!nickname || nickname === '匿名同事') {
         this.promptSetNickname()
