@@ -10,7 +10,7 @@ const personasCollection = db.collection('personas')
 const matchesCollection = db.collection('matches')
 
 const PERSONA_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-const DIMENSION_NAMES = ['人品', '焦虑', '努力', '表演']
+const DIMENSION_NAMES = ['人品', '焦虑', '努力', '表演', '摸鱼']
 
 // 简单符号累加：+ 题贡献 +answer(1~5)，- 题贡献 -answer(-5~-1)
 // 满格取 5 * 该维度题数，用于条形图归一

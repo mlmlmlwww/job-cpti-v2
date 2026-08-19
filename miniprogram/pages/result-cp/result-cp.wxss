@@ -155,22 +155,16 @@
 }
 
 .dim-center-line {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 2rpx;
-  background: rgba(255, 255, 255, 0.3);
+  display: none;
 }
 
 .dim-fill {
   position: absolute;
+  left: 0;
   top: 0;
   bottom: 0;
   border-radius: 7rpx;
 }
-.dim-fill.pos { left: 50%; }
-.dim-fill.neg { right: 50%; }
 .dim-fill.me { background: #f093fb; }
 .dim-fill.other { background: #ffd166; }
 

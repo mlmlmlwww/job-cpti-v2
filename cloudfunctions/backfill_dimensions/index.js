@@ -9,7 +9,7 @@ const _ = db.command
 const usersCollection = db.collection('users')
 const questionsCollection = db.collection('questions')
 
-const DIMENSION_NAMES = ['人品', '焦虑', '努力', '表演']
+const DIMENSION_NAMES = ['人品', '焦虑', '努力', '表演', '摸鱼']
 
 // 简单符号累加：+ 题贡献 +answer(1~5)，- 题贡献 -answer(-5~-1)
 // 满格取 5 * 该维度题数

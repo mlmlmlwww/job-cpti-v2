@@ -38,9 +38,9 @@
     </button>
   </view>
 
-  <!-- 4 维度双方对比（放在 CTA 之后） -->
+  <!-- 5 维度双方对比（放在 CTA 之后） -->
   <view class="dim-card" wx:if="{{dimRows.length > 0}}">
-    <view class="dim-title">4 维画像对比</view>
+    <view class="dim-title">人格指标</view>
     <view class="dim-legend">
       <view class="legend-item"><view class="legend-dot me"></view><text>你</text></view>
       <view class="legend-item"><view class="legend-dot other"></view><text>TA</text></view>
@@ -49,17 +49,17 @@
       <view class="dim-name">{{item.name}}</view>
       <view class="dim-cmp-bars">
         <view class="dim-track">
-          <view class="dim-center-line"></view>
           <view
-            class="dim-fill {{item.meDirection === 'pos' ? 'pos' : 'neg'}} me"
-            style="width: {{item.meRatioPct / 2}}%"
+            wx:if="{{item.meDirection === 'pos'}}"
+            class="dim-fill me"
+            style="width: {{item.meRatioPct}}%"
           ></view>
         </view>
         <view class="dim-track">
-          <view class="dim-center-line"></view>
           <view
-            class="dim-fill {{item.otherDirection === 'pos' ? 'pos' : 'neg'}} other"
-            style="width: {{item.otherRatioPct / 2}}%"
+            wx:if="{{item.otherDirection === 'pos'}}"
+            class="dim-fill other"
+            style="width: {{item.otherRatioPct}}%"
           ></view>
         </view>
       </view>

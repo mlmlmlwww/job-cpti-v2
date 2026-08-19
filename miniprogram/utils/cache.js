@@ -1,6 +1,6 @@
 // 本地缓存工具：内存 + storage 双层，支持版本号失效
 // version 变更后旧缓存自动失效
-const CACHE_VERSION = 'v2'
+const CACHE_VERSION = 'v3'
 
 const memory = {}
 

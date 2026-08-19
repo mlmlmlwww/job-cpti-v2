@@ -34,16 +34,16 @@
     </button>
   </view>
 
-  <!-- 4 维度双向条形图（放在 CTA 之后） -->
+  <!-- 5 维度条形图（放在 CTA 之后） -->
   <view class="dim-card" wx:if="{{dimBars.length > 0}}">
-    <view class="dim-title">你的 4 维画像</view>
+    <view class="dim-title">人格指标</view>
     <view class="dim-row" wx:for="{{dimBars}}" wx:key="name">
       <view class="dim-name">{{item.name}}</view>
       <view class="dim-track">
-        <view class="dim-center-line"></view>
         <view
-          class="dim-fill {{item.direction === 'pos' ? 'pos' : 'neg'}}"
-          style="width: {{item.ratioPct / 2}}%; background: {{item.color}};"
+          wx:if="{{item.direction === 'pos'}}"
+          class="dim-fill"
+          style="width: {{item.ratioPct}}%"
         ></view>
       </view>
     </view>

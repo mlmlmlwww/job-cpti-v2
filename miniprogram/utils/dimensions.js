@@ -1,10 +1,11 @@
 // 维度条形图数据工具
-const DIMENSIONS = ['人品', '焦虑', '努力', '表演']
+const DIMENSIONS = ['人品', '焦虑', '努力', '表演', '摸鱼']
 const DIM_COLORS = {
   '人品': '#8bd3ff',
   '焦虑': '#ffb0b0',
   '努力': '#b0ffbd',
-  '表演': '#ffd97a'
+  '表演': '#ffd97a',
+  '摸鱼': '#d4b0ff'
 }
 
 // 把 (score, max) 组转成条形图渲染需要的数组：
