@@ -3,13 +3,63 @@ const app = getApp()
 const cache = require('../../utils/cache.js')
 
 function cpCacheKey(id) { return `cp_result_${id}` }
+function personaCacheKey(id) { return `persona_${id}` }
 
 Page({
   data: {
     cpData: null,
     nickname: '',
+    meIntro: '',
+    otherIntro: '',
     loading: true,
     qrcodePath: app.globalData.qrcodePath || 'cloud://job-cpti-dev-d6g8x3zkb2ae306f8.6a6f-job-cpti-dev-d6g8x3zkb2ae306f8-1457130836/others/wxcode.png'
+  },
+
+  // 根据 openid 计算出"我/对方"的人格与显示名，并拼接人格描述
+  buildIntro(cpData) {
+    const openid = app.globalData.openid || ''
+    if (!cpData || !cpData.userA || !cpData.userB) return { meIntro: '', otherIntro: '' }
+    const me = cpData.userA.openid === openid ? cpData.userA : cpData.userB
+    const other = cpData.userA.openid === openid ? cpData.userB : cpData.userA
+
+    const mePersona = cache.getSync(personaCacheKey(me.personaId)) || {}
+    const otherPersona = cache.getSync(personaCacheKey(other.personaId)) || {}
+
+    let meIntro = ''
+    if (me.personaName) {
+      meIntro = `你 是 ${me.personaName}`
+      if (mePersona.slogan) meIntro += `，${mePersona.slogan}`
+    }
+
+    let otherIntro = ''
+    if (other.personaName) {
+      const otherName = other.nickname || '匿名同事'
+      otherIntro = `${otherName} 是 ${other.personaName}`
+      if (otherPersona.slogan) otherIntro += `，${otherPersona.slogan}`
+    }
+    return { meIntro, otherIntro }
+  },
+
+  // 缺失的 persona slogan 异步拉一下，拉到后刷新 intro
+  ensurePersonaSlogans(cpData) {
+    if (!cpData || !cpData.userA || !cpData.userB) return
+    const ids = [cpData.userA.personaId, cpData.userB.personaId].filter(id => {
+      if (!id) return false
+      const cached = cache.getSync(personaCacheKey(id))
+      return !cached || !cached.slogan
+    })
+    if (ids.length === 0) return
+    ids.forEach(id => {
+      wx.cloud.callFunction({ name: 'get_persona_detail', data: { personaId: Number(id) } }).then(res => {
+        if (res.result && res.result.code === 0) {
+          const persona = res.result.data.persona
+          cache.setSync(personaCacheKey(persona.personaId), persona)
+          // 拿到后重新计算 intro
+          const intro = this.buildIntro(this.data.cpData)
+          this.setData({ meIntro: intro.meIntro, otherIntro: intro.otherIntro })
+        }
+      }).catch(() => {})
+    })
   },
 
   async onLoad(options) {
@@ -27,7 +77,9 @@ Page({
     const cached = cache.getSync(cpCacheKey(matchId))
     if (cached) {
       const nickname = (userInfo && userInfo.nickname) || '匿名同事'
-      this.setData({ cpData: cached, nickname, loading: false })
+      const { meIntro, otherIntro } = this.buildIntro(cached)
+      this.setData({ cpData: cached, nickname, meIntro, otherIntro, loading: false })
+      this.ensurePersonaSlogans(cached)
       // 后台静默刷新
       if (needsInit) {
         wx.cloud.callFunction({ name: 'user_init' }).then(res => {
@@ -35,14 +87,18 @@ Page({
             const u = res.result.data
             app.globalData.userInfo = u
             if (u.openid) app.globalData.openid = u.openid
-            this.setData({ nickname: u.nickname || nickname })
+            // openid 变化后重新计算 me/other
+            const intro = this.buildIntro(this.data.cpData)
+            this.setData({ nickname: u.nickname || nickname, meIntro: intro.meIntro, otherIntro: intro.otherIntro })
           }
         }).catch(() => {})
       }
       this.callGetCPResult(matchId).then(res => {
         if (res && res.result && res.result.code === 0) {
           cache.setSync(cpCacheKey(matchId), res.result.data)
-          this.setData({ cpData: res.result.data })
+          const intro = this.buildIntro(res.result.data)
+          this.setData({ cpData: res.result.data, meIntro: intro.meIntro, otherIntro: intro.otherIntro })
+          this.ensurePersonaSlogans(res.result.data)
         }
       })
       return
@@ -86,7 +142,9 @@ Page({
   processCPResult(res, matchId, nickname) {
     if (res && res.result && res.result.code === 0) {
       cache.setSync(cpCacheKey(matchId), res.result.data)
-      this.setData({ cpData: res.result.data, loading: false })
+      const { meIntro, otherIntro } = this.buildIntro(res.result.data)
+      this.setData({ cpData: res.result.data, meIntro, otherIntro, loading: false })
+      this.ensurePersonaSlogans(res.result.data)
       if (!nickname || nickname === '匿名同事') {
         this.promptSetNickname()
       }

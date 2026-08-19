@@ -20,6 +20,10 @@
         <text class="persona-name-right">{{cpData.userB.personaName}}</text>
       </view>
       <view class="cp-name">{{cpData.cpName}}</view>
+      <view class="cp-you-info" wx:if="{{meIntro || otherIntro}}">
+        <view class="cp-you-line" wx:if="{{meIntro}}">{{meIntro}}</view>
+        <view class="cp-you-line" wx:if="{{otherIntro}}">{{otherIntro}}</view>
+      </view>
       <view class="cp-description">{{cpData.cpDescription}}</view>
     </view>
   </view>
